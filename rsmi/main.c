@@ -4,68 +4,123 @@
 
 #define NameSize 64
 
-typedef struct init_status {
+typedef struct init_status
+{
   int done;
   rsmi_status_t status;
 } init_status;
 
-typedef struct result_str {
-  int status;
+typedef struct result_str
+{
+  uint16_t status;
   char *data;
 } result_str;
-typedef struct result_int {
-  int status;
-  int data;
-} result_int;
+
+typedef struct result_uint32_t
+{
+  uint16_t status;
+  uint32_t data;
+} result_uint32_t;
+
+typedef struct result_uint16_t
+{
+  uint16_t status;
+  uint16_t data;
+} result_uint16_t;
 
 init_status init = {0, 0};
 
-int init_c() {
+uint16_t init_c()
+{
   init.status = rsmi_init(0);
-  if(init.status == RSMI_STATUS_SUCCESS) {
+  if (init.status == RSMI_STATUS_SUCCESS)
+  {
     init.done = 1;
   }
-  return init.status;  
+  return init.status;
 }
 
-result_int num_devices() {
-  if(init.done != 1 && init.status != RSMI_STATUS_SUCCESS) {
-    result_int error = {14, 0};
+result_uint32_t num_devices()
+{
+  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  {
+    result_uint32_t error = {init.status, 0};
     return error;
   }
 
   uint32_t num;
   rsmi_status_t ret = rsmi_num_monitor_devices(&num);
 
-  result_int res = {ret, num};
+  result_uint32_t res = {ret, num};
   return res;
-
 }
 
-void basic()
+result_uint16_t device_id(uint32_t dv_ind)
 {
-  rsmi_status_t ret;
-  uint32_t num_devices;
-
-  ret = rsmi_init(0);
-  ret = rsmi_num_monitor_devices(&num_devices);
-
-  uint16_t dev_id;
-  char *name = (char *)malloc(NameSize * sizeof(char));
-  char *vendor = (char *)malloc(NameSize * sizeof(char));
-
-  for (int i = 0; i < num_devices; ++i)
+  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
   {
-    ret = rsmi_dev_id_get(i, &dev_id);
-    ret = rsmi_dev_name_get(i, name, NameSize);
-    ret = rsmi_dev_vendor_name_get(i, vendor, NameSize);
-    printf("%d \n", dev_id);
-    printf("%s \n", name);
-    printf("%s \n", vendor);
+    result_uint16_t error = {init.status, 0};
+    return error;
   }
 
-  free(name);
-  free(vendor);
+  uint16_t id;
+  rsmi_status_t ret = rsmi_dev_id_get(dv_ind, &id);
 
-  ret = rsmi_shut_down();
+  result_uint16_t res = {ret, id};
+  return res;
+}
+
+result_uint16_t device_vendor_id(uint32_t dv_ind) {
+  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  {
+    result_uint16_t error = {init.status, 0};
+    return error;
+  }
+  uint16_t id;
+  rsmi_status_t ret = rsmi_dev_vendor_id_get(dv_ind, &id);
+
+  result_uint16_t res = {ret, id};
+  return res;
+}
+
+result_str device_name(uint32_t dv_ind) {
+  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  {
+    result_str error = {init.status, ""};
+    return error;
+  }
+
+  char *name = (char*)malloc(NameSize*sizeof(char));
+  rsmi_status_t ret = rsmi_dev_name_get(dv_ind, name, NameSize);
+
+  result_str res = {ret, name};
+  return res; 
+}
+
+result_str 	device_brand (uint32_t dv_ind) {
+  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  {
+    result_str error = {init.status, ""};
+    return error;
+  }
+
+  char *brand = (char*)malloc(NameSize*sizeof(char));
+  rsmi_status_t ret = rsmi_dev_brand_get(dv_ind, brand, NameSize);
+
+  result_str res = {ret, brand};
+  return res; 
+}
+
+result_str 	device_vendor_name (uint32_t dv_ind) {
+  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  {
+    result_str error = {init.status, ""};
+    return error;
+  }
+
+  char *vendor = (char*)malloc(NameSize*sizeof(char));
+  rsmi_status_t ret = rsmi_dev_vendor_name_get(dv_ind, vendor, NameSize);
+
+  result_str res = {ret, vendor};
+  return res; 
 }
