@@ -2,6 +2,7 @@
     "files.associations": {
         "string": "cpp",
         "chrono": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "stdint.h": "c"
     }
 }
