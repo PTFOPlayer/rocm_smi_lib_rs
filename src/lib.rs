@@ -1,8 +1,10 @@
-mod bindings;
+pub mod bindings;
 use bindings::*;
 
-mod error;
+pub mod error;
 use error::*;
+
+pub mod queries;
 
 pub struct RocmSmi {}
 
@@ -167,7 +169,6 @@ impl RocmSmi {
 
         Ok(res.data)
     }
-
 }
 
 #[cfg(test)]

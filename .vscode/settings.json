@@ -3,6 +3,9 @@
         "string": "cpp",
         "chrono": "c",
         "typeinfo": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "identifier.h": "c",
+        "structs.h": "c",
+        "pcie.h": "c"
     }
 }

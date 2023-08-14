@@ -31,3 +31,8 @@ typedef struct result_uint16_t
   uint16_t status;
   uint16_t data;
 } result_uint16_t;
+
+
+typedef struct result_pcie_bandwidth {
+  uint16_t status;
+} result_pcie_bandwidth;

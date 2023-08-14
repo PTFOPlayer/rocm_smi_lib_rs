@@ -141,6 +141,7 @@ aux_source_directory(${RSMI_ROOT} RSMISources)
 include_directories(${RSMI_INC_DIR})
 include_directories(${RSMI_ROOT}/..)
 include_directories(${RSMI_ROOT}/src)
+include_directories(${RSMI_ROOT}/queries)
 
 # Build rules
 add_library(${RSMI} STATIC ${RSMISources} ${functionalSources})
