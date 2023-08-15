@@ -15,16 +15,12 @@ init_status init = {0, 0};
 uint16_t init_c()
 {
   init.status = rsmi_init(0);
-  if (init.status == RSMI_STATUS_SUCCESS)
-  {
-    init.done = 1;
-  }
   return init.status;
 }
 
 result_uint32_t num_devices()
 {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint32_t error = {init.status, 0};
     return error;
@@ -39,7 +35,7 @@ result_uint32_t num_devices()
 
 result_uint16_t device_id(uint32_t dv_ind)
 {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint16_t error = {init.status, 0};
     return error;
@@ -54,7 +50,7 @@ result_uint16_t device_id(uint32_t dv_ind)
 
 result_uint16_t device_vendor_id(uint32_t dv_ind)
 {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint16_t error = {init.status, 0};
     return error;
@@ -68,7 +64,7 @@ result_uint16_t device_vendor_id(uint32_t dv_ind)
 
 result_str device_name(uint32_t dv_ind)
 {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_str error = {init.status, ""};
     return error;
@@ -83,7 +79,7 @@ result_str device_name(uint32_t dv_ind)
 
 result_str device_brand(uint32_t dv_ind)
 {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_str error = {init.status, ""};
     return error;
@@ -98,7 +94,7 @@ result_str device_brand(uint32_t dv_ind)
 
 result_str device_vendor_name(uint32_t dv_ind)
 {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_str error = {init.status, ""};
     return error;
@@ -113,7 +109,7 @@ result_str device_vendor_name(uint32_t dv_ind)
 
 result_str device_vram_vendor_name(uint32_t dv_ind)
 {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_str error = {init.status, ""};
     return error;
@@ -128,7 +124,7 @@ result_str device_vram_vendor_name(uint32_t dv_ind)
 
 result_str device_serial(uint32_t dv_ind)
 {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_str error = {init.status, ""};
     return error;
@@ -142,7 +138,7 @@ result_str device_serial(uint32_t dv_ind)
 }
 
 result_uint16_t device_subsystem_id(uint32_t dv_ind) {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint16_t error = {init.status, 0};
     return error;
@@ -156,7 +152,7 @@ result_uint16_t device_subsystem_id(uint32_t dv_ind) {
 
 result_str device_subsystem_name(uint32_t dv_ind)
 {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_str error = {init.status, ""};
     return error;
@@ -170,7 +166,7 @@ result_str device_subsystem_name(uint32_t dv_ind)
 }
 
 result_uint32_t device_drm_render(uint32_t dv_ind) {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint32_t error = {init.status, 0};
     return error;
@@ -183,7 +179,7 @@ result_uint32_t device_drm_render(uint32_t dv_ind) {
 }
 
 result_uint16_t device_subsystem_vendor_id(uint32_t dv_ind) {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint16_t error = {init.status, 0};
     return error;
@@ -198,7 +194,7 @@ result_uint16_t device_subsystem_vendor_id(uint32_t dv_ind) {
 
 result_uint64_t device_unique_id(uint32_t dv_ind)
 {
-  if (init.done != 1 && init.status != RSMI_STATUS_SUCCESS)
+  if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint64_t error = {init.status, 0};
     return error;
