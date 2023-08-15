@@ -3,7 +3,6 @@
 
 typedef struct init_status
 {
-  int done;
   rsmi_status_t status;
 } init_status;
 
@@ -35,4 +34,8 @@ typedef struct result_uint16_t
 
 typedef struct result_pcie_bandwidth {
   uint16_t status;
+  uint32_t current;
+  uint32_t num_supported;
+  uint32_t *lines;
+  uint64_t *frequencies;
 } result_pcie_bandwidth;

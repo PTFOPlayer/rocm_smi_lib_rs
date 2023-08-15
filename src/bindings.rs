@@ -9,11 +9,13 @@ extern "C" {
     pub fn device_vendor_name(dev_id: u32) -> ResultStr;
     pub fn device_vram_vendor_name(dev_id: u32) -> ResultStr;
     pub fn device_serial(dev_id: u32) -> ResultStr;
-    pub fn device_subsystem_id(dev_id:  u32) -> ResultUint16T;
-    pub fn device_subsystem_name(dev_id:  u32) -> ResultStr;
-    pub fn device_drm_render(dev_id:  u32) -> ResultUint32T;
-    pub fn device_subsystem_vendor_id(dev_id:  u32) -> ResultUint16T;
-    pub fn device_unique_id(dev_id:  u32) -> ResultUint64T;
+    pub fn device_subsystem_id(dev_id: u32) -> ResultUint16T;
+    pub fn device_subsystem_name(dev_id: u32) -> ResultStr;
+    pub fn device_drm_render(dev_id: u32) -> ResultUint32T;
+    pub fn device_subsystem_vendor_id(dev_id: u32) -> ResultUint16T;
+    pub fn device_unique_id(dev_id: u32) -> ResultUint64T;
+    // pcie
+    pub fn pci_bandwidth(dev_id: u32) -> ResultPcieBandwidth;
 }
 
 use libc::c_char;
@@ -40,4 +42,13 @@ pub struct ResultUint32T {
 pub struct ResultUint16T {
     pub status: u16,
     pub data: u16,
+}
+
+#[repr(C)]
+pub struct ResultPcieBandwidth {
+    pub status: u16,
+    pub current: u32,
+    pub num_supported: u32,
+    pub lines: *const u32,
+    pub frequencies: *const u64,
 }

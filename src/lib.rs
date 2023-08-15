@@ -173,7 +173,7 @@ impl RocmSmi {
 
 #[cfg(test)]
 mod test {
-    use crate::RocmSmi;
+    use crate::{RocmSmi, queries::pcie::Pcie};
 
     #[test]
     fn main_test() {
@@ -192,6 +192,7 @@ mod test {
                 println!("{:?}", res.get_device_drm_render_minor(0));
                 println!("{:?}", res.get_device_subsystem_vendor_id(0));
                 println!("{:?}", res.get_device_unique_id(0));
+                Pcie::get_pcie();
             }
             Err(err) => println!("{:?}", err),
         }
