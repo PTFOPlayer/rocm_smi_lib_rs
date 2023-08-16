@@ -197,7 +197,7 @@ mod test {
                 println!("Device drm render minor: {:?}", res.get_device_drm_render_minor(0));
                 println!("Device subsystem vendor id {:?}", res.get_device_subsystem_vendor_id(0));
                 println!("Device unique id (might fail if there is only one gpu) {:?}", res.get_device_unique_id(0));
-                println!("Device pcie data: {:?}", res.get_pcie_data(0).unwrap().get_current());
+                println!("Device pcie data: {:?}", res.get_pcie_data(0));
             }
             Err(err) => println!("{:?}", err),
         }
