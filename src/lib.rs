@@ -3,6 +3,7 @@ use bindings::*;
 
 pub mod error;
 use error::*;
+use queries::pcie::Pcie;
 
 pub mod queries;
 
@@ -169,30 +170,34 @@ impl RocmSmi {
 
         Ok(res.data)
     }
+
+    pub fn get_pcie_data<'a>(&self, dev_id: u32) -> Result<Pcie<'a>, RocmErr> {
+        Pcie::get_pcie(dev_id)
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{RocmSmi, queries::pcie::Pcie};
+    use crate::RocmSmi;
 
     #[test]
     fn main_test() {
         match RocmSmi::init() {
             Ok(res) => {
-                println!("{:?}", res.get_device_count());
-                println!("{:?}", res.get_device_id(0));
-                println!("{:?}", res.get_device_name(0));
-                println!("{:?}", res.get_vendor_id(0));
-                println!("{:?}", res.get_device_brand(0));
-                println!("{:?}", res.get_device_vendor_name(0));
-                println!("{:?}", res.get_device_vram_vendor_name(0));
-                println!("{:?}", res.get_device_serial_number(0));
-                println!("{:?}", res.get_device_subsystem_id(0));
-                println!("{:?}", res.get_device_subsystem_name(0));
-                println!("{:?}", res.get_device_drm_render_minor(0));
-                println!("{:?}", res.get_device_subsystem_vendor_id(0));
-                println!("{:?}", res.get_device_unique_id(0));
-                Pcie::get_pcie();
+                println!("Device Count: {:?}", res.get_device_count());
+                println!("Device ID: {:?}", res.get_device_id(0));
+                println!("Device name: {:?}", res.get_device_name(0));
+                println!("Device vendor id: {:?}", res.get_vendor_id(0));
+                println!("Device brand: {:?}", res.get_device_brand(0));
+                println!("Device vendor name: {:?}", res.get_device_vendor_name(0));
+                println!("Device vram vendor name: {:?}", res.get_device_vram_vendor_name(0));
+                println!("Device serial: {:?}", res.get_device_serial_number(0));
+                println!("Device subsystem id: {:?}", res.get_device_subsystem_id(0));
+                println!("Device subsystem name: {:?}", res.get_device_subsystem_name(0));
+                println!("Device drm render minor: {:?}", res.get_device_drm_render_minor(0));
+                println!("Device subsystem vendor id {:?}", res.get_device_subsystem_vendor_id(0));
+                println!("Device unique id (might fail if there is only one gpu) {:?}", res.get_device_unique_id(0));
+                println!("Device pcie data: {:?}", res.get_pcie_data(0).unwrap().get_current());
             }
             Err(err) => println!("{:?}", err),
         }
