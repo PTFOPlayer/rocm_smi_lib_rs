@@ -31,7 +31,6 @@ result_pcie_bandwidth pci_bandwidth(uint32_t dv_ind)
 
   uint32_t supported = bandwidth.transfer_rate.num_supported;
   uint32_t current_indx = bandwidth.transfer_rate.current;
-  uint32_t current = bandwidth.lanes[current_indx];
 
   uint32_t *lines = (uint32_t*)malloc(sizeof(uint32_t) * supported);
   uint64_t *frequencies = (uint64_t*)malloc(sizeof(uint64_t) * supported);
@@ -46,6 +45,6 @@ result_pcie_bandwidth pci_bandwidth(uint32_t dv_ind)
     frequencies[i] = bandwidth.transfer_rate.frequency[i];
   }
   
-  result_pcie_bandwidth res = {ret, current, supported, lines, frequencies};
+  result_pcie_bandwidth res = {ret, current_indx, supported, lines, frequencies};
   return res;
 }
