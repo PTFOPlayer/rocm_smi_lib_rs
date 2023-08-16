@@ -9,13 +9,15 @@
 
 #define NameSize 64
 
-init_status init = {0, 0};
-
+init_status init = {20, 0};
 
 uint16_t init_c()
 {
-  init.status = rsmi_init(0);
-  return init.status;
+  if (!init.initiated) {
+    init.status = rsmi_init(0);
+    init.initiated = 1;
+    return init.status;
+  }  
 }
 
 result_uint32_t num_devices()

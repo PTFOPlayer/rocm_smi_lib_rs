@@ -4,6 +4,7 @@
 typedef struct init_status
 {
   rsmi_status_t status;
+  uint8_t initiated;
 } init_status;
 
 typedef struct result_str

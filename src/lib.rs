@@ -17,6 +17,13 @@ impl RocmSmi {
         }
         Err(RocmErr::from_u16(code))
     }
+    pub fn into_first_device(self) -> Result<RocmSmiDevice, RocmErr> {
+        RocmSmiDevice::new_from_rocm(self, 0)
+    }
+
+    pub fn into_device(self, dev_id: u32) -> Result<RocmSmiDevice, RocmErr> {
+        RocmSmiDevice::new_from_rocm(self, dev_id)
+    }
 
     pub fn get_device_count(&self) -> Result<u32, RocmErr> {
         let res = unsafe { num_devices() };
@@ -52,7 +59,7 @@ impl RocmSmi {
         }
     }
 
-    pub fn get_vendor_id(&self, dev_id: u32) -> Result<u16, RocmErr> {
+    pub fn get_device_vendor_id(&self, dev_id: u32) -> Result<u16, RocmErr> {
         let res = unsafe { device_vendor_id(dev_id) };
 
         if res.status != 0 {
@@ -171,8 +178,83 @@ impl RocmSmi {
         Ok(res.data)
     }
 
-    pub fn get_pcie_data<'a>(&self, dev_id: u32) -> Result<Pcie<'a>, RocmErr> {
+    pub fn get_device_pcie_data<'a>(&self, dev_id: u32) -> Result<Pcie<'a>, RocmErr> {
         Pcie::get_pcie(dev_id)
+    }
+}
+
+pub struct RocmSmiDevice {
+    id: u32,
+    rocm: RocmSmi,
+}
+
+impl RocmSmiDevice {
+    pub(crate) fn new_from_rocm(rocm: RocmSmi, id: u32) -> Result<Self, RocmErr> {
+        let dev_c = rocm.get_device_count()?;
+        if id >= dev_c {
+            return Err(RocmErr::RsmiStatusInputOutOfBounds);
+        }
+        Ok(Self { id, rocm })
+    }
+    pub fn new(id: u32) -> Result<Self, RocmErr> {
+        let rocm = RocmSmi::init()?;
+        let dev_c = rocm.get_device_count()?;
+        if id >= dev_c {
+            return Err(RocmErr::RsmiStatusInputOutOfBounds);
+        }
+        Ok(Self { id, rocm })
+    }
+
+    pub fn get_id(&self) -> Result<u16, RocmErr> {
+        self.rocm.get_device_id(self.id)
+    }
+
+    pub fn get_name(&self) -> Result<String, RocmErr> {
+        self.rocm.get_device_name(self.id)
+    }
+
+    pub fn get_vemdor_id(&self) -> Result<u16, RocmErr> {
+        self.rocm.get_device_vendor_id(self.id)
+    }
+
+    pub fn get_brand(&self) -> Result<String, RocmErr> {
+        self.rocm.get_device_brand(self.id)
+    }
+
+    pub fn get_vendor_name(&self) -> Result<String, RocmErr> {
+        self.rocm.get_device_vendor_name(self.id)
+    }
+
+    pub fn get_vram_vendor_name(&self) -> Result<String, RocmErr> {
+        self.rocm.get_device_vram_vendor_name(self.id)
+    }
+
+    pub fn get_serial_number(&self) -> Result<String, RocmErr> {
+        self.rocm.get_device_serial_number(self.id)
+    }
+
+    pub fn get_subsystem_id(&self) -> Result<u16, RocmErr> {
+        self.rocm.get_device_subsystem_id(self.id)
+    }
+
+    pub fn get_subsystem_name(&self) -> Result<String, RocmErr> {
+        self.rocm.get_device_subsystem_name(self.id)
+    }
+
+    pub fn get_drm_render_minor(&self) -> Result<u32, RocmErr> {
+        self.rocm.get_device_drm_render_minor(self.id)
+    }
+
+    pub fn get_subsystem_vendor_id(&self) -> Result<u16, RocmErr> {
+        self.rocm.get_device_subsystem_vendor_id(self.id)
+    }
+
+    pub fn get_unique_id(&self) -> Result<u64, RocmErr> {
+        self.rocm.get_device_unique_id(self.id)
+    }
+
+    pub fn get_pcie_data<'a>(&self) -> Result<Pcie<'a>, RocmErr> {
+        self.rocm.get_device_pcie_data(self.id)
     }
 }
 
@@ -181,23 +263,59 @@ mod test {
     use crate::RocmSmi;
 
     #[test]
-    fn main_test() {
+    fn full_test() {
         match RocmSmi::init() {
             Ok(res) => {
-                println!("Device Count: {:?}", res.get_device_count());
-                println!("Device ID: {:?}", res.get_device_id(0));
-                println!("Device name: {:?}", res.get_device_name(0));
-                println!("Device vendor id: {:?}", res.get_vendor_id(0));
-                println!("Device brand: {:?}", res.get_device_brand(0));
-                println!("Device vendor name: {:?}", res.get_device_vendor_name(0));
-                println!("Device vram vendor name: {:?}", res.get_device_vram_vendor_name(0));
-                println!("Device serial: {:?}", res.get_device_serial_number(0));
-                println!("Device subsystem id: {:?}", res.get_device_subsystem_id(0));
-                println!("Device subsystem name: {:?}", res.get_device_subsystem_name(0));
-                println!("Device drm render minor: {:?}", res.get_device_drm_render_minor(0));
-                println!("Device subsystem vendor id {:?}", res.get_device_subsystem_vendor_id(0));
-                println!("Device unique id (might fail if there is only one gpu) {:?}", res.get_device_unique_id(0));
-                println!("Device pcie data: {:?}", res.get_pcie_data(0));
+                let device_count = res.get_device_count();
+                match device_count {
+                    Ok(count) => {
+                        println!("Device Count: {:?}", count);
+                        println!("Device ID: {:?}", res.get_device_id(0));
+                        println!("Device name: {:?}", res.get_device_name(0));
+                        println!("Device vendor id: {:?}", res.get_device_vendor_id(0));
+                        println!("Device brand: {:?}", res.get_device_brand(0));
+                        println!("Device vendor name: {:?}", res.get_device_vendor_name(0));
+                        println!(
+                            "Device vram vendor name: {:?}",
+                            res.get_device_vram_vendor_name(0)
+                        );
+                        println!("Device serial: {:?}", res.get_device_serial_number(0));
+                        println!("Device subsystem id: {:?}", res.get_device_subsystem_id(0));
+                        println!(
+                            "Device subsystem name: {:?}",
+                            res.get_device_subsystem_name(0)
+                        );
+                        println!(
+                            "Device drm render minor: {:?}",
+                            res.get_device_drm_render_minor(0)
+                        );
+                        println!(
+                            "Device subsystem vendor id {:?}",
+                            res.get_device_subsystem_vendor_id(0)
+                        );
+                        println!(
+                            "Device unique id (might fail if there is only one gpu) {:?}",
+                            res.get_device_unique_id(0)
+                        );
+                        println!("Device pcie data: {:?}", res.get_device_pcie_data(0));
+                    }
+                    Err(err) => println!("{:?}", err),
+                }
+            }
+            Err(err) => println!("{:?}", err),
+        }
+    }
+
+    #[test]
+    fn device_test() {
+        match RocmSmi::init() {
+            Ok(res) => {
+                match res.into_first_device() {
+                    Ok(dev) => {
+                        println!("succesfully got first device: {:?}", dev.get_brand());
+                    }
+                    Err(err) => println!("{:?}", err),
+                }
             }
             Err(err) => println!("{:?}", err),
         }
