@@ -36,21 +36,10 @@ impl Pcie<'_> {
             let numa = topo_numa_affinity(dev_id);
             let throughput = pci_throughput(dev_id);
 
-            if bandwidth.status != 0 {
-                return Err(RocmErr::from_u16(bandwidth.status));
-            }
-
-            if id.status != 0 {
-                return Err(RocmErr::from_u16(id.status));
-            }
-
-            if numa.status != 0 {
-                return Err(RocmErr::from_u16(id.status));
-            }
-
-            if throughput.status != 0 {
-                return Err(RocmErr::from_u16(id.status));
-            }
+            check_res(bandwidth.status)?;
+            check_res(id.status)?;
+            check_res(numa.status)?;
+            check_res(throughput.status)?;
 
             Ok(Self {
                 id: id.data,
