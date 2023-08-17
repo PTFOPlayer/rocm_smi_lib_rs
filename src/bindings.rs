@@ -15,12 +15,12 @@ extern "C" {
     pub(crate) fn device_drm_render(dev_id: u32) -> ResultUint32T;
     pub(crate) fn device_subsystem_vendor_id(dev_id: u32) -> ResultUint16T;
     pub(crate) fn device_unique_id(dev_id: u32) -> ResultUint64T;
-    
+
     // pcie
     pub(crate) fn pci_bandwidth(dev_id: u32) -> ResultPcieBandwidth;
-    pub(crate) fn pcie_id(dev_id:u32) -> ResultUint64T;
-    pub(crate) fn topo_numa_affinity(dev_id:u32) -> ResultUint32T;
-    pub(crate) fn pci_throughput(dev_id:u32) -> ResultPcieThroughput;
+    pub(crate) fn pcie_id(dev_id: u32) -> ResultUint64T;
+    pub(crate) fn topo_numa_affinity(dev_id: u32) -> ResultUint32T;
+    pub(crate) fn pci_throughput(dev_id: u32) -> ResultPcieThroughput;
 
     // power
     pub(crate) fn power_sensor_count(dv_ind: u32) -> ResultUint16T;
@@ -28,8 +28,10 @@ extern "C" {
 
 use libc::c_char;
 
+use crate::error::RocmErr;
+
 #[repr(C)]
-pub(crate)struct ResultStr {
+pub(crate) struct ResultStr {
     pub(crate) status: u16,
     pub(crate) data: *mut c_char,
 }
@@ -67,4 +69,20 @@ pub(crate) struct ResultPcieThroughput {
     pub(crate) sent: u64,
     pub(crate) recived: u64,
     pub(crate) max_pkg_size: u64,
+}
+
+pub(crate) fn check_res(status: u16) -> Result<(), RocmErr> {
+    if status != 0 {
+        return Err(RocmErr::from_u16(status));
+    }
+    Ok(())
+}
+
+pub(crate) fn string_from_ptr(ptr: *mut i8) -> Result<String, RocmErr> {
+    let c_str = unsafe { std::ffi::CStr::from_ptr(ptr) };
+    let data = c_str.to_str().to_owned();
+    match data {
+        Ok(res) => Ok(res.to_owned()),
+        Err(_) => Err(RocmErr::RsmiStatusUnknownError),
+    }
 }

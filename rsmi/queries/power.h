@@ -31,3 +31,38 @@ result_uint16_t power_sensor_count(uint32_t dv_ind)
   result_uint16_t res = {init.status, count};
   return res;
 }
+
+result_uint64_t power_avg(uint32_t dv_ind, uint16_t sensor) {
+  if (init.status != RSMI_STATUS_SUCCESS)
+  {
+    result_uint64_t error = {init.status, 0};
+    return error;
+  }
+
+  uint64_t pwr;
+  rsmi_status_t ret = rsmi_dev_power_ave_get(dv_ind, sensor, &pwr);
+
+  result_uint64_t res = {init.status, pwr};
+  return res;
+}
+
+result_uint64_t power_avg_all(uint32_t dv_ind, uint16_t sensor) {
+  if (init.status != RSMI_STATUS_SUCCESS)
+  {
+    result_uint64_t error = {init.status, 0};
+    return error;
+  }
+
+  uint64_t pwr = 0;
+  uint16_t count = 0;
+  rsmi_status_t ret = rsmi_dev_power_ave_get(dv_ind, count, &pwr);
+  while (ret == 0) {
+    count++;
+    uint64_t temp_pwr = 0;
+    ret = rsmi_dev_power_ave_get(dv_ind, count, &temp_pwr);
+    pwr+= temp_pwr;
+  }
+
+  result_uint64_t res = {init.status, pwr};
+  return res;
+}
