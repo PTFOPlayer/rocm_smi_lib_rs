@@ -15,11 +15,15 @@ extern "C" {
     pub(crate) fn device_drm_render(dev_id: u32) -> ResultUint32T;
     pub(crate) fn device_subsystem_vendor_id(dev_id: u32) -> ResultUint16T;
     pub(crate) fn device_unique_id(dev_id: u32) -> ResultUint64T;
+    
     // pcie
     pub(crate) fn pci_bandwidth(dev_id: u32) -> ResultPcieBandwidth;
     pub(crate) fn pcie_id(dev_id:u32) -> ResultUint64T;
     pub(crate) fn topo_numa_affinity(dev_id:u32) -> ResultUint32T;
     pub(crate) fn pci_throughput(dev_id:u32) -> ResultPcieThroughput;
+
+    // power
+    pub(crate) fn power_sensor_count(dv_ind: u32) -> ResultUint16T;
 }
 
 use libc::c_char;

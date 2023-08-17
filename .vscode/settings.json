@@ -6,6 +6,8 @@
         "stdint.h": "c",
         "identifier.h": "c",
         "structs.h": "c",
-        "pcie.h": "c"
-    }
+        "pcie.h": "c",
+        "init.h": "c"
+    },
+    "editor.tabSize": 2
 }

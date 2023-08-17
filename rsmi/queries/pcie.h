@@ -8,9 +8,9 @@
 #include "../structs.h"
 #endif
 
-#ifndef IDENTIFIER_H
-#define IDENTIFIER_H
-#include "./identifier.h"
+#ifndef INIT_H
+#define INIT_H
+#include "./init.h"
 #endif
 
 result_pcie_bandwidth pci_bandwidth(uint32_t dv_ind)

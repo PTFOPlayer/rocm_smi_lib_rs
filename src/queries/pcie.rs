@@ -12,7 +12,7 @@ pub struct Pcie<'a> {
     pub(crate) max_pkg_size: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct PcieBandwidthAndThroughput {
     pub lines: u32,
     pub frequency: u64,
@@ -21,7 +21,7 @@ pub struct PcieBandwidthAndThroughput {
     pub max_pkg_size: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct PcieIdentifiers {
     pub id: u64,
     pub associated_numa_node: u32,
