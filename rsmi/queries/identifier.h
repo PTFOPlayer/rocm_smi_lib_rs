@@ -7,18 +7,10 @@
 #include "../structs.h"
 #endif
 
-#define NameSize 64
-
-init_status init = {20, 0};
-
-uint16_t init_c()
-{
-  if (!init.initiated) {
-    init.status = rsmi_init(0);
-    init.initiated = 1;
-    return init.status;
-  }  
-}
+#ifndef INIT_H
+#define INIT_H
+#include "./init.h"
+#endif
 
 result_uint32_t num_devices()
 {
