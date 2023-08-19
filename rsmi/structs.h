@@ -47,3 +47,10 @@ typedef struct result_pcie_throughput
   uint64_t recived;
   uint64_t max_pkg_size;
 } result_pcie_throughput;
+
+typedef struct result_uint64_t_dual
+{
+  uint16_t status;
+  uint64_t data1;
+  uint64_t data2;
+} result_uint64_t_dual;

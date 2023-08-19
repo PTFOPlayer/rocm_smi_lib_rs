@@ -32,7 +32,7 @@ result_uint16_t power_sensor_count(uint32_t dv_ind)
   return res;
 }
 
-result_uint64_t power_avg(uint32_t dv_ind, uint16_t sensor) {
+result_uint64_t power_sensor(uint32_t dv_ind, uint16_t sensor) {
   if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint64_t error = {init.status, 0};
@@ -46,7 +46,7 @@ result_uint64_t power_avg(uint32_t dv_ind, uint16_t sensor) {
   return res;
 }
 
-result_uint64_t power_avg_all(uint32_t dv_ind, uint16_t sensor) {
+result_uint64_t power_avg_all(uint32_t dv_ind) {
   if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint64_t error = {init.status, 0};
@@ -66,3 +66,46 @@ result_uint64_t power_avg_all(uint32_t dv_ind, uint16_t sensor) {
   result_uint64_t res = {init.status, pwr};
   return res;
 }
+
+result_uint64_t power_cap(uint32_t dv_ind, uint16_t sensor) {
+  if (init.status != RSMI_STATUS_SUCCESS)
+  {
+    result_uint64_t error = {init.status, 0};
+    return error;
+  }
+
+  uint64_t pwr;
+  rsmi_status_t ret = rsmi_dev_power_cap_get(dv_ind, sensor, &pwr);
+
+  result_uint64_t res = {init.status, pwr};
+  return res;
+}
+
+result_uint64_t default_power_cap(uint32_t dv_ind) {
+  if (init.status != RSMI_STATUS_SUCCESS)
+  {
+    result_uint64_t error = {init.status, 0};
+    return error;
+  }
+
+  uint64_t pwr;
+  rsmi_status_t ret = rsmi_dev_power_cap_default_get(dv_ind,&pwr);
+
+  result_uint64_t res = {init.status, pwr};
+  return res;
+}
+
+result_uint64_t_dual power_cap_range(uint32_t dv_ind, uint16_t sensor) {
+  if (init.status != RSMI_STATUS_SUCCESS)
+  {
+    result_uint64_t_dual error = {init.status, 0};
+    return error;
+  }
+
+  uint64_t max, min;
+  rsmi_status_t ret = rsmi_dev_power_cap_range_get(dv_ind, sensor, &max, &min);
+
+  result_uint64_t_dual res = {init.status, max, min};
+  return res;
+}
+
