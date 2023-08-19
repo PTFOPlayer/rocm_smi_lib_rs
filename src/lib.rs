@@ -3,7 +3,7 @@ use bindings::*;
 
 pub mod error;
 use error::*;
-use queries::pcie::Pcie;
+use queries::{pcie::Pcie, power::{get_sensors, Power}};
 
 pub mod queries;
 
@@ -20,7 +20,7 @@ impl RocmSmi {
         }
         Err(RocmErr::from_u16(code))
     }
-    
+
     pub fn into_first_device(self) -> Result<RocmSmiDevice, RocmErr> {
         RocmSmiDevice::new_from_rocm(self, 0)
     }
@@ -110,6 +110,12 @@ impl RocmSmi {
     pub fn get_device_pcie_data<'a>(&self, dev_id: u32) -> Result<Pcie<'a>, RocmErr> {
         Pcie::get_pcie(dev_id)
     }
+
+    pub fn get_device_power_data(&self, dev_id: u32) -> Result<Power, RocmErr> {
+        get_sensors(dev_id)?;
+        let power = unsafe { Power::get_power(dev_id) };
+        power
+    }
 }
 
 #[cfg(test)]
@@ -143,6 +149,7 @@ mod test {
                             res.get_device_unique_id(0)
                         );
                         println!("pcie data: {:?}", res.get_device_pcie_data(0));
+                        println!("power data: {:?}", res.get_device_power_data(0));
                     }
                     Err(err) => println!("{:?}", err),
                 }
@@ -155,9 +162,7 @@ mod test {
     fn device_test() {
         match RocmSmi::init() {
             Ok(res) => match res.into_first_device() {
-                Ok(dev) => {
-                    println!("succesfully got first device: {:?}", dev.get_brand());
-                }
+                Ok(dev) => println!("succesfully got first device: {:?}", dev.get_brand()),
                 Err(err) => println!("{:?}", err),
             },
             Err(err) => println!("{:?}", err),

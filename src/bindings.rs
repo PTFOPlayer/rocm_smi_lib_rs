@@ -24,6 +24,11 @@ extern "C" {
 
     // power
     pub(crate) fn power_sensor_count(dv_ind: u32) -> ResultUint16T;
+    pub(crate) fn power_sensor(dv_ind: u32, sensor: u16) -> ResultUint64T;
+    pub(crate) fn power_avg_all(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn power_cap(dv_ind: u32, sensor: u16) -> ResultUint64T;
+    pub(crate) fn default_power_cap(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn power_cap_range(dv_ind: u32) -> ResultUint64TDual;
 }
 
 use libc::c_char;
@@ -71,6 +76,13 @@ pub(crate) struct ResultPcieThroughput {
     pub(crate) max_pkg_size: u64,
 }
 
+#[repr(C)]
+pub(crate) struct ResultUint64TDual {
+    pub(crate) status: u16,
+    pub(crate) data1: u64,
+    pub(crate) data2: u64,
+}
+
 pub(crate) fn check_res(status: u16) -> Result<(), RocmErr> {
     if status != 0 {
         return Err(RocmErr::from_u16(status));
@@ -83,6 +95,6 @@ pub(crate) fn string_from_ptr(ptr: *mut i8) -> Result<String, RocmErr> {
     let data = c_str.to_str().to_owned();
     match data {
         Ok(res) => Ok(res.to_owned()),
-        Err(_) => Err(RocmErr::RsmiStatusUnknownError),
+        Err(_) => Err(RocmErr::RsmiStringConversionError),
     }
 }

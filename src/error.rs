@@ -21,6 +21,7 @@ pub enum RocmErr {
     RsmiStatusSettingUnavailable = 18,
     RsmiStatusAmdgpuRestartErr = 19,
     RsmiStatusUnknownError = 20,
+    RsmiStringConversionError = 21,
 }
 
 impl RocmErr {
@@ -47,6 +48,7 @@ impl RocmErr {
             18 => RocmErr::RsmiStatusSettingUnavailable,
             19 => RocmErr::RsmiStatusAmdgpuRestartErr,
             20 => RocmErr::RsmiStatusUnknownError,
+            21 => RocmErr::RsmiStringConversionError,
             _ => RocmErr::RsmiStatusUnknownError,
         }
     }
@@ -73,7 +75,8 @@ impl RocmErr {
             RocmErr::RsmiStatusRefcountOverflow => 17 ,
             RocmErr::RsmiStatusSettingUnavailable => 18 ,
             RocmErr::RsmiStatusAmdgpuRestartErr => 19 ,
-            RocmErr::RsmiStatusUnknownError => 20
+            RocmErr::RsmiStatusUnknownError => 20,
+            RocmErr::RsmiStringConversionError => 21
         }
     }
 }

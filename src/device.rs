@@ -1,4 +1,4 @@
-use crate::{RocmSmi, error::RocmErr, queries::pcie::Pcie};
+use crate::{RocmSmi, error::RocmErr, queries::{pcie::Pcie, power::Power}};
 
 pub struct RocmSmiDevice {
   id: u32,
@@ -72,5 +72,9 @@ impl RocmSmiDevice {
 
   pub fn get_pcie_data<'a>(&self) -> Result<Pcie<'a>, RocmErr> {
       self.rocm.get_device_pcie_data(self.id)
+  }
+
+  pub fn get_power_data(&self) -> Result<Power, RocmErr> {
+    self.rocm.get_device_power_data(self.id)
   }
 }
