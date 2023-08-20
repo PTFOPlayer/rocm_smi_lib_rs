@@ -2,14 +2,14 @@ use crate::{bindings::*, error::RocmErr};
 use std::slice::from_raw_parts;
 #[derive(Debug)]
 pub struct Pcie<'a> {
-    pub(crate) id: u64,
-    pub(crate) associated_numa_node: u32,
-    pub(crate) current_index: u32,
-    pub(crate) lines: &'a [u32],
-    pub(crate) frequencies: &'a [u64],
-    pub(crate) pkg_sent: u64,
-    pub(crate) pkg_recived: u64,
-    pub(crate) max_pkg_size: u64,
+    pub id: u64,
+    pub associated_numa_node: u32,
+    pub current_index: u32,
+    pub lines: &'a [u32],
+    pub frequencies: &'a [u64],
+    pub pkg_sent: u64,
+    pub pkg_recived: u64,
+    pub max_pkg_size: u64,
 }
 
 #[derive(Debug, Clone, Copy)]

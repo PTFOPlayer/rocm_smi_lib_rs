@@ -9,6 +9,5 @@ edition = "2021"
 ffi = "0.0.2"
 libc = "0.2.147"
 
-
 [build-dependencies]
 cmake = "0.1.31"

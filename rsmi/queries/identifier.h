@@ -131,7 +131,8 @@ result_str device_serial(uint32_t dv_ind)
   return res;
 }
 
-result_uint16_t device_subsystem_id(uint32_t dv_ind) {
+result_uint16_t device_subsystem_id(uint32_t dv_ind)
+{
   if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint16_t error = {init.status, 0};
@@ -159,7 +160,8 @@ result_str device_subsystem_name(uint32_t dv_ind)
   return res;
 }
 
-result_uint32_t device_drm_render(uint32_t dv_ind) {
+result_uint32_t device_drm_render(uint32_t dv_ind)
+{
   if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint32_t error = {init.status, 0};
@@ -172,7 +174,8 @@ result_uint32_t device_drm_render(uint32_t dv_ind) {
   return res;
 }
 
-result_uint16_t device_subsystem_vendor_id(uint32_t dv_ind) {
+result_uint16_t device_subsystem_vendor_id(uint32_t dv_ind)
+{
   if (init.status != RSMI_STATUS_SUCCESS)
   {
     result_uint16_t error = {init.status, 0};
@@ -184,7 +187,6 @@ result_uint16_t device_subsystem_vendor_id(uint32_t dv_ind) {
   result_uint16_t res = {ret, id};
   return res;
 }
-
 
 result_uint64_t device_unique_id(uint32_t dv_ind)
 {

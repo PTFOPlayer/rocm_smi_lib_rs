@@ -16,6 +16,7 @@ pub struct Power {
     pub power_cap_range: PowerCapRange,
 }
 
+#[inline(always)]
 pub(crate) fn get_sensors(dev_id: u32) -> Result<u16, RocmErr> {
     let sensors = unsafe { power_sensor_count(dev_id) };
     check_res(sensors.status)?;
@@ -23,6 +24,7 @@ pub(crate) fn get_sensors(dev_id: u32) -> Result<u16, RocmErr> {
 }
 
 impl Power {
+    #[inline(always)]
     pub(crate) unsafe fn get_power(dev_id: u32) -> Result<Power, RocmErr> {
         let sensors = power_sensor_count(dev_id);
         check_res(sensors.status)?;

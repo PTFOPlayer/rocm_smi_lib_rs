@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <rocm_smi/rocm_smi.h>
-#include <stdio.h>
 
 #ifndef STRUCTS_H
 #define STRUCTS_H
@@ -80,9 +79,13 @@ result_pcie_throughput pci_throughput(uint32_t dv_ind) {
     return error;
   }
 
-  result_pcie_throughput res = {0, 0, 0, 0};
+  uint64_t sent;
+  uint64_t received;
+  uint64_t max_pkg_size;
 
-  res.status = rsmi_dev_pci_throughput_get(dv_ind, &res.sent, &res.recived, &res.max_pkg_size); 
+  rsmi_status_t ret = rsmi_dev_pci_throughput_get(dv_ind, &sent, &received, &max_pkg_size); 
   
+  result_pcie_throughput res = {ret, sent, received, max_pkg_size };
+
   return res;
 }

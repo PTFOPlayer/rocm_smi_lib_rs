@@ -1,6 +1,5 @@
 {
     "files.associations": {
-        "string": "cpp",
         "chrono": "c",
         "typeinfo": "c",
         "stdint.h": "c",
