@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <rocm_smi/rocm_smi.h>
-#include <stdio.h>
 
 #ifndef STRUCTS_H
 #define STRUCTS_H

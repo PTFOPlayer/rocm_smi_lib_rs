@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <rocm_smi/rocm_smi.h>
 
 #ifndef STRUCTS_H
@@ -8,10 +9,6 @@
 
 #ifndef INIT_H
 #define INIT_H
-#include "queries/init.h"
+#include "./init.h"
 #endif
 
-#include "queries/pcie.h"
-#include "queries/identifier.h"
-#include "queries/power.h"
-#include "queries/memory.h"

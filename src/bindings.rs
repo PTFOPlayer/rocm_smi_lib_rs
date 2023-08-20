@@ -83,6 +83,7 @@ pub(crate) struct ResultUint64TDual {
     pub(crate) data2: u64,
 }
 
+#[inline(always)]
 pub(crate) fn check_res(status: u16) -> Result<(), RocmErr> {
     if status != 0 {
         return Err(RocmErr::from_u16(status));
@@ -90,6 +91,7 @@ pub(crate) fn check_res(status: u16) -> Result<(), RocmErr> {
     Ok(())
 }
 
+#[inline(always)]
 pub(crate) fn string_from_ptr(ptr: *mut i8) -> Result<String, RocmErr> {
     let c_str = unsafe { std::ffi::CStr::from_ptr(ptr) };
     let data = c_str.to_str().to_owned();
