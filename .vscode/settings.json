@@ -8,5 +8,4 @@
         "pcie.h": "c",
         "init.h": "c"
     },
-    "editor.tabSize": 2
 }
