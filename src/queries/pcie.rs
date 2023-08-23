@@ -29,12 +29,12 @@ pub struct PcieIdentifiers {
 
 impl Pcie<'_> {
     #[inline(always)]
-    pub(crate) fn get_pcie(dev_id: u32) -> Result<Self, RocmErr> {
+    pub(crate) fn get_pcie(dv_ind: u32) -> Result<Self, RocmErr> {
         unsafe {
-            let bandwidth = pci_bandwidth(dev_id);
-            let id = pcie_id(dev_id);
-            let numa = topo_numa_affinity(dev_id);
-            let throughput = pci_throughput(dev_id);
+            let bandwidth = pci_bandwidth(dv_ind);
+            let id = pcie_id(dv_ind);
+            let numa = topo_numa_affinity(dv_ind);
+            let throughput = pci_throughput(dv_ind);
 
             check_res(bandwidth.status)?;
             check_res(id.status)?;

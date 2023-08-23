@@ -1,26 +1,30 @@
+use libc::c_char;
+
+use crate::error::RocmErr;
+
 #[link(name = "rsmi64", kind = "static")]
 extern "C" {
     // identifiers
     pub(crate) fn init_c() -> u16;
     pub(crate) fn num_devices() -> ResultUint32T;
-    pub(crate) fn device_id(dev_id: u32) -> ResultUint16T;
-    pub(crate) fn device_name(dev_id: u32) -> ResultStr;
-    pub(crate) fn device_vendor_id(dev_id: u32) -> ResultUint16T;
-    pub(crate) fn device_brand(dev_id: u32) -> ResultStr;
-    pub(crate) fn device_vendor_name(dev_id: u32) -> ResultStr;
-    pub(crate) fn device_vram_vendor_name(dev_id: u32) -> ResultStr;
-    pub(crate) fn device_serial(dev_id: u32) -> ResultStr;
-    pub(crate) fn device_subsystem_id(dev_id: u32) -> ResultUint16T;
-    pub(crate) fn device_subsystem_name(dev_id: u32) -> ResultStr;
-    pub(crate) fn device_drm_render(dev_id: u32) -> ResultUint32T;
-    pub(crate) fn device_subsystem_vendor_id(dev_id: u32) -> ResultUint16T;
-    pub(crate) fn device_unique_id(dev_id: u32) -> ResultUint64T;
+    pub(crate) fn device_id(dv_ind: u32) -> ResultUint16T;
+    pub(crate) fn device_name(dv_ind: u32) -> ResultStr;
+    pub(crate) fn device_vendor_id(dv_ind: u32) -> ResultUint16T;
+    pub(crate) fn device_brand(dv_ind: u32) -> ResultStr;
+    pub(crate) fn device_vendor_name(dv_ind: u32) -> ResultStr;
+    pub(crate) fn device_vram_vendor_name(dv_ind: u32) -> ResultStr;
+    pub(crate) fn device_serial(dv_ind: u32) -> ResultStr;
+    pub(crate) fn device_subsystem_id(dv_ind: u32) -> ResultUint16T;
+    pub(crate) fn device_subsystem_name(dv_ind: u32) -> ResultStr;
+    pub(crate) fn device_drm_render(dv_ind: u32) -> ResultUint32T;
+    pub(crate) fn device_subsystem_vendor_id(dv_ind: u32) -> ResultUint16T;
+    pub(crate) fn device_unique_id(dv_ind: u32) -> ResultUint64T;
 
     // pcie
-    pub(crate) fn pci_bandwidth(dev_id: u32) -> ResultPcieBandwidth;
-    pub(crate) fn pcie_id(dev_id: u32) -> ResultUint64T;
-    pub(crate) fn topo_numa_affinity(dev_id: u32) -> ResultUint32T;
-    pub(crate) fn pci_throughput(dev_id: u32) -> ResultPcieThroughput;
+    pub(crate) fn pci_bandwidth(dv_ind: u32) -> ResultPcieBandwidth;
+    pub(crate) fn pcie_id(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn topo_numa_affinity(dv_ind: u32) -> ResultUint32T;
+    pub(crate) fn pci_throughput(dv_ind: u32) -> ResultPcieThroughput;
 
     // power
     pub(crate) fn power_sensor_count(dv_ind: u32) -> ResultUint16T;
@@ -29,11 +33,16 @@ extern "C" {
     pub(crate) fn power_cap(dv_ind: u32, sensor: u16) -> ResultUint64T;
     pub(crate) fn default_power_cap(dv_ind: u32) -> ResultUint64T;
     pub(crate) fn power_cap_range(dv_ind: u32) -> ResultUint64TDual;
+
+    // memory 
+    pub(crate) fn mem_total_vram(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn mem_total_vis_vram(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn mem_total_gtt(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn mem_used_vram(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn mem_used_vis_vram(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn mem_used_gtt(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn memory_busy_percent(dv_ind: u32) -> ResultUint32T;
 }
-
-use libc::c_char;
-
-use crate::error::RocmErr;
 
 #[repr(C)]
 pub(crate) struct ResultStr {
