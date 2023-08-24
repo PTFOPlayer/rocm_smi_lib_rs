@@ -1,56 +1,68 @@
 #include <stdint.h>
 #include <rocm_smi/rocm_smi.h>
 
+#define u8 uint8_t
+#define u16 uint16_t
+#define u32 uint32_t
+#define u64 uint64_t
+#define i64 int64_t
+
 typedef struct init_status
 {
   rsmi_status_t status;
-  uint8_t initiated;
+  u8 initiated;
 } init_status;
 
 typedef struct result_str
 {
-  uint16_t status;
+  u16 status;
   char *data;
 } result_str;
 
-typedef struct result_uint64_t
+typedef struct result_u64
 {
-  uint16_t status;
-  uint64_t data;
-} result_uint64_t;
+  u16 status;
+  u64 data;
+} result_u64;
 
-typedef struct result_uint32_t
+typedef struct result_i64
 {
-  uint16_t status;
-  uint32_t data;
-} result_uint32_t;
+  u16 status;
+  i64 data;
+} result_i64;
 
-typedef struct result_uint16_t
+typedef struct result_u32
 {
-  uint16_t status;
-  uint16_t data;
-} result_uint16_t;
+  u16 status;
+  u32 data;
+} result_u32;
+
+typedef struct result_u16
+{
+  u16 status;
+  u16 data;
+} result_u16;
 
 typedef struct result_pcie_bandwidth
 {
-  uint16_t status;
-  uint32_t current_index;
-  uint32_t num_supported;
-  uint32_t *lines;
-  uint64_t *frequencies;
+  u16 status;
+  u32 current_index;
+  u32 num_supported;
+  u32 *lines;
+  u64 *frequencies;
 } result_pcie_bandwidth;
 
 typedef struct result_pcie_throughput
 {
-  uint16_t status;
-  uint64_t sent;
-  uint64_t recived;
-  uint64_t max_pkg_size;
+  u16 status;
+  u64 sent;
+  u64 recived;
+  u64 max_pkg_size;
 } result_pcie_throughput;
 
-typedef struct result_uint64_t_dual
+typedef struct result_u64_dual
 {
-  uint16_t status;
-  uint64_t data1;
-  uint64_t data2;
-} result_uint64_t_dual;
+  u16 status;
+  u64 data1;
+  u64 data2;
+} result_u64_dual;
