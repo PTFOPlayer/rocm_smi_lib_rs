@@ -6,42 +6,44 @@ use crate::error::RocmErr;
 extern "C" {
     // identifiers
     pub(crate) fn init_c() -> u16;
-    pub(crate) fn num_devices() -> ResultUint32T;
-    pub(crate) fn device_id(dv_ind: u32) -> ResultUint16T;
+    pub(crate) fn num_devices() -> ResultU32;
+    pub(crate) fn device_id(dv_ind: u32) -> ResultU16;
     pub(crate) fn device_name(dv_ind: u32) -> ResultStr;
-    pub(crate) fn device_vendor_id(dv_ind: u32) -> ResultUint16T;
+    pub(crate) fn device_vendor_id(dv_ind: u32) -> ResultU16;
     pub(crate) fn device_brand(dv_ind: u32) -> ResultStr;
     pub(crate) fn device_vendor_name(dv_ind: u32) -> ResultStr;
     pub(crate) fn device_vram_vendor_name(dv_ind: u32) -> ResultStr;
     pub(crate) fn device_serial(dv_ind: u32) -> ResultStr;
-    pub(crate) fn device_subsystem_id(dv_ind: u32) -> ResultUint16T;
+    pub(crate) fn device_subsystem_id(dv_ind: u32) -> ResultU16;
     pub(crate) fn device_subsystem_name(dv_ind: u32) -> ResultStr;
-    pub(crate) fn device_drm_render(dv_ind: u32) -> ResultUint32T;
-    pub(crate) fn device_subsystem_vendor_id(dv_ind: u32) -> ResultUint16T;
-    pub(crate) fn device_unique_id(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn device_drm_render(dv_ind: u32) -> ResultU32;
+    pub(crate) fn device_subsystem_vendor_id(dv_ind: u32) -> ResultU16;
+    pub(crate) fn device_unique_id(dv_ind: u32) -> ResultU64;
 
     // pcie
     pub(crate) fn pci_bandwidth(dv_ind: u32) -> ResultPcieBandwidth;
-    pub(crate) fn pcie_id(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn topo_numa_affinity(dv_ind: u32) -> ResultUint32T;
+    pub(crate) fn pcie_id(dv_ind: u32) -> ResultU64;
+    pub(crate) fn topo_numa_affinity(dv_ind: u32) -> ResultU32;
     pub(crate) fn pci_throughput(dv_ind: u32) -> ResultPcieThroughput;
 
     // power
-    pub(crate) fn power_sensor_count(dv_ind: u32) -> ResultUint16T;
-    pub(crate) fn power_sensor(dv_ind: u32, sensor: u16) -> ResultUint64T;
-    pub(crate) fn power_avg_all(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn power_cap(dv_ind: u32, sensor: u16) -> ResultUint64T;
-    pub(crate) fn default_power_cap(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn power_cap_range(dv_ind: u32) -> ResultUint64TDual;
+    pub(crate) fn power_sensor_count(dv_ind: u32) -> ResultU16;
+    pub(crate) fn power_sensor(dv_ind: u32, sensor: u16) -> ResultU64;
+    pub(crate) fn power_avg_all(dv_ind: u32) -> ResultU64;
+    pub(crate) fn power_cap(dv_ind: u32, sensor: u16) -> ResultU64;
+    pub(crate) fn default_power_cap(dv_ind: u32) -> ResultU64;
+    pub(crate) fn power_cap_range(dv_ind: u32) -> ResultU64Dual;
 
     // memory 
-    pub(crate) fn mem_total_vram(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn mem_total_vis_vram(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn mem_total_gtt(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn mem_used_vram(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn mem_used_vis_vram(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn mem_used_gtt(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn memory_busy_percent(dv_ind: u32) -> ResultUint32T;
+    pub(crate) fn mem_total_vram(dv_ind: u32) -> ResultU64;
+    pub(crate) fn mem_total_vis_vram(dv_ind: u32) -> ResultU64;
+    pub(crate) fn mem_total_gtt(dv_ind: u32) -> ResultU64;
+    pub(crate) fn mem_used_vram(dv_ind: u32) -> ResultU64;
+    pub(crate) fn mem_used_vis_vram(dv_ind: u32) -> ResultU64;
+    pub(crate) fn mem_used_gtt(dv_ind: u32) -> ResultU64;
+    pub(crate) fn memory_busy_percent(dv_ind: u32) -> ResultU32;
+
+    //physical
 }
 
 #[repr(C)]
@@ -51,19 +53,25 @@ pub(crate) struct ResultStr {
 }
 
 #[repr(C)]
-pub(crate) struct ResultUint64T {
+pub(crate) struct ResultU64 {
     pub(crate) status: u16,
     pub(crate) data: u64,
 }
 
 #[repr(C)]
-pub(crate) struct ResultUint32T {
+pub(crate) struct ResultI64 {
+    pub(crate) status: u16,
+    pub(crate) data: i64,
+}
+
+#[repr(C)]
+pub(crate) struct ResultU32 {
     pub(crate) status: u16,
     pub(crate) data: u32,
 }
 
 #[repr(C)]
-pub(crate) struct ResultUint16T {
+pub(crate) struct ResultU16 {
     pub(crate) status: u16,
     pub(crate) data: u16,
 }
@@ -86,7 +94,7 @@ pub(crate) struct ResultPcieThroughput {
 }
 
 #[repr(C)]
-pub(crate) struct ResultUint64TDual {
+pub(crate) struct ResultU64Dual {
     pub(crate) status: u16,
     pub(crate) data1: u64,
     pub(crate) data2: u64,

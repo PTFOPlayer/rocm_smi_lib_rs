@@ -11,7 +11,7 @@
 
 init_status init = {RSMI_STATUS_INIT_ERROR, 0};
 
-uint16_t init_c()
+u16 init_c()
 {
   if (!init.initiated)
   {
@@ -21,7 +21,7 @@ uint16_t init_c()
   return init.status;
 }
 
-uint16_t shutdown_c()
+u16 shutdown_c()
 {
   if (!init.initiated)
   {

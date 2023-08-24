@@ -16,68 +16,68 @@
 #define VIS_VRAM RSMI_MEM_TYPE_VIS_VRAM
 #define GTT RSMI_MEM_TYPE_GTT
 
-result_uint64_t mem_total(uint32_t dv_ind, rsmi_memory_type_t mem_type) {
+result_u64 mem_total(u32 dv_ind, rsmi_memory_type_t mem_type) {
   if (init.status != RSMI_STATUS_SUCCESS)
   {
-    result_uint64_t error = {init.status, 0};
+    result_u64 error = {init.status, 0};
     return error;
   }
 
-  uint64_t ammount;
+  u64 ammount;
   rsmi_status_t ret = rsmi_dev_memory_total_get(dv_ind, mem_type, &ammount);
 
-  result_uint64_t res = {ret, ammount};
+  result_u64 res = {ret, ammount};
   return res;
 }
 
-result_uint64_t mem_used(uint32_t dv_ind, rsmi_memory_type_t mem_type) {
+result_u64 mem_used(u32 dv_ind, rsmi_memory_type_t mem_type) {
   if (init.status != RSMI_STATUS_SUCCESS)
   {
-    result_uint64_t error = {init.status, 0};
+    result_u64 error = {init.status, 0};
     return error;
   }
 
-  uint64_t ammount;
+  u64 ammount;
   rsmi_status_t ret = rsmi_dev_memory_usage_get(dv_ind, mem_type, &ammount);
 
-  result_uint64_t res = {ret, ammount};
+  result_u64 res = {ret, ammount};
   return res;
 }
 
-result_uint64_t mem_total_vram(uint32_t dv_ind) {
+result_u64 mem_total_vram(u32 dv_ind) {
   return mem_total(dv_ind, VRAM);
 }
 
-result_uint64_t mem_total_vis_vram(uint32_t dv_ind) {
+result_u64 mem_total_vis_vram(u32 dv_ind) {
   return mem_total(dv_ind, VIS_VRAM);
 }
 
-result_uint64_t mem_total_gtt(uint32_t dv_ind) {
+result_u64 mem_total_gtt(u32 dv_ind) {
   return mem_total(dv_ind, GTT);
 }
 
-result_uint64_t mem_used_vram(uint32_t dv_ind) {
+result_u64 mem_used_vram(u32 dv_ind) {
   return mem_used(dv_ind, VRAM);
 }
 
-result_uint64_t mem_used_vis_vram(uint32_t dv_ind) {
+result_u64 mem_used_vis_vram(u32 dv_ind) {
   return mem_used(dv_ind, VIS_VRAM);
 }
 
-result_uint64_t mem_used_gtt(uint32_t dv_ind) {
+result_u64 mem_used_gtt(u32 dv_ind) {
   return mem_used(dv_ind, GTT);
 }
 
-result_uint32_t memory_busy_percent(uint32_t dv_ind) {
+result_u32 memory_busy_percent(u32 dv_ind) {
     if (init.status != RSMI_STATUS_SUCCESS)
   {
-    result_uint32_t error = {init.status, 0};
+    result_u32 error = {init.status, 0};
     return error;
   }
 
-  uint32_t percent;
+  u32 percent;
   rsmi_status_t ret = rsmi_dev_memory_busy_percent_get(dv_ind, &percent);
 
-  result_uint32_t res = {ret, percent};
+  result_u32 res = {ret, percent};
   return res;
 }
