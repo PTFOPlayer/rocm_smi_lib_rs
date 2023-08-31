@@ -19,6 +19,12 @@ typedef struct result_uint64_t
   uint64_t data;
 } result_uint64_t;
 
+typedef struct result_int64_t
+{
+  uint16_t status;
+  int64_t data;
+} result_int64_t;
+
 typedef struct result_uint32_t
 {
   uint16_t status;
@@ -47,6 +53,16 @@ typedef struct result_pcie_throughput
   uint64_t recived;
   uint64_t max_pkg_size;
 } result_pcie_throughput;
+
+typedef struct result_power {
+  uint16_t status;
+  uint16_t sensors;
+  uint64_t default_power_cap;
+  uint64_t *power_per_sensor;
+  uint64_t *power_cap_per_sensor;
+  uint64_t *power_cap_min_sensor;
+  uint64_t *power_cap_max_sensor;
+} result_power;
 
 typedef struct result_uint64_t_dual
 {

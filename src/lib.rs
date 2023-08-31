@@ -5,7 +5,7 @@ pub mod error;
 use error::*;
 use queries::{
     pcie::Pcie,
-    power::{get_sensors, Power}, memory::Memory,
+    power::Power, memory::Memory,
 };
 
 pub mod queries;
@@ -115,7 +115,6 @@ impl RocmSmi {
     }
 
     pub fn get_device_power_data(&self, dv_ind: u32) -> Result<Power, RocmErr> {
-        get_sensors(dv_ind)?;
         unsafe { Power::get_power(dv_ind) }
     }
 

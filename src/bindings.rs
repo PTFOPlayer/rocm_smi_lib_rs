@@ -27,14 +27,9 @@ extern "C" {
     pub(crate) fn pci_throughput(dv_ind: u32) -> ResultPcieThroughput;
 
     // power
-    pub(crate) fn power_sensor_count(dv_ind: u32) -> ResultUint16T;
-    pub(crate) fn power_sensor(dv_ind: u32, sensor: u16) -> ResultUint64T;
-    pub(crate) fn power_avg_all(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn power_cap(dv_ind: u32, sensor: u16) -> ResultUint64T;
-    pub(crate) fn default_power_cap(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn power_cap_range(dv_ind: u32) -> ResultUint64TDual;
+    pub(crate) fn power_data(dv_ind: u32) -> ResultPower;
 
-    // memory 
+    // memory
     pub(crate) fn mem_total_vram(dv_ind: u32) -> ResultUint64T;
     pub(crate) fn mem_total_vis_vram(dv_ind: u32) -> ResultUint64T;
     pub(crate) fn mem_total_gtt(dv_ind: u32) -> ResultUint64T;
@@ -77,6 +72,7 @@ pub(crate) struct ResultPcieBandwidth {
     pub(crate) frequencies: *const u64,
 }
 
+
 #[repr(C)]
 pub(crate) struct ResultPcieThroughput {
     pub(crate) status: u16,
@@ -86,10 +82,14 @@ pub(crate) struct ResultPcieThroughput {
 }
 
 #[repr(C)]
-pub(crate) struct ResultUint64TDual {
+pub(crate) struct ResultPower {
     pub(crate) status: u16,
-    pub(crate) data1: u64,
-    pub(crate) data2: u64,
+    pub(crate) sensors: u16,
+    pub(crate) default_power_cap: u64,
+    pub(crate) power_per_sensor: *const u64,
+    pub(crate) power_cap_per_sensor: *const u64,
+    pub(crate) power_cap_min_sensor: *const u64,
+    pub(crate) power_cap_max_sensor: *const u64,
 }
 
 #[inline(always)]
