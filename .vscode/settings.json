@@ -6,6 +6,11 @@
         "identifier.h": "c",
         "structs.h": "c",
         "pcie.h": "c",
-        "init.h": "c"
+        "init.h": "c",
+        "algorithm": "c",
+        "random": "c",
+        "limits": "c",
+        "semaphore": "c",
+        "stdio.h": "c"
     },
 }
