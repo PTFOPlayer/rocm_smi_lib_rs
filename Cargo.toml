@@ -6,8 +6,6 @@ license = "GPL-3.0"
 description = "easy to use crate for using rocm-smi from rust"
 repository = "https://github.com/PTFOPlayer/rocm_lib"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 libc = "0.2.147"
 

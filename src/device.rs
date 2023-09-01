@@ -1,6 +1,6 @@
 use crate::{
     error::RocmErr,
-    queries::{pcie::Pcie, power::Power, memory::Memory},
+    queries::{memory::Memory, pcie::Pcie, power::Power},
     RocmSmi,
 };
 
