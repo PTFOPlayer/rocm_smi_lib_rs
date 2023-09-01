@@ -12,8 +12,7 @@ pub struct RocmSmiDevice {
 impl RocmSmiDevice {
     #[inline(always)]
     pub(crate) fn new_from_rocm(rocm: RocmSmi, id: u32) -> Result<Self, RocmErr> {
-        let dev_c = rocm.get_device_count()?;
-        if id >= dev_c {
+        if id >= rocm.get_device_count() {
             return Err(RocmErr::RsmiStatusInputOutOfBounds);
         }
         Ok(Self { id, rocm })
@@ -21,8 +20,7 @@ impl RocmSmiDevice {
 
     pub fn new(id: u32) -> Result<Self, RocmErr> {
         let rocm = RocmSmi::init()?;
-        let dev_c = rocm.get_device_count()?;
-        if id >= dev_c {
+        if id >= rocm.get_device_count() {
             return Err(RocmErr::RsmiStatusInputOutOfBounds);
         }
         Ok(Self { id, rocm })
