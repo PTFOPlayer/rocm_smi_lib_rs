@@ -31,15 +31,10 @@ impl Pcie<'_> {
     #[inline(always)]
     pub(crate) fn get_pcie(dv_ind: u32) -> Result<Self, RocmErr> {
         unsafe {
-            let bandwidth = pci_bandwidth(dv_ind);
-            let id = pcie_id(dv_ind);
-            let numa = topo_numa_affinity(dv_ind);
-            let throughput = pci_throughput(dv_ind);
-
-            check_res(bandwidth.status)?;
-            check_res(id.status)?;
-            check_res(numa.status)?;
-            check_res(throughput.status)?;
+            let bandwidth = pci_bandwidth(dv_ind).check()?;
+            let id = pcie_id(dv_ind).check()?;
+            let numa = topo_numa_affinity(dv_ind).check()?;
+            let throughput = pci_throughput(dv_ind).check()?;
 
             Ok(Self {
                 id: id.data,

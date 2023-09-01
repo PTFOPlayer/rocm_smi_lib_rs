@@ -3,10 +3,7 @@ use bindings::*;
 
 pub mod error;
 use error::*;
-use queries::{
-    pcie::Pcie,
-    power::Power, memory::Memory,
-};
+use queries::{memory::Memory, pcie::Pcie, power::Power};
 
 pub mod queries;
 
@@ -33,81 +30,54 @@ impl RocmSmi {
     }
 
     pub fn get_device_count(&self) -> Result<u32, RocmErr> {
-        let res = unsafe { num_devices() };
-        check_res(res.status)?;
-        Ok(res.data)
+        Ok(unsafe { num_devices().check()? }.data)
     }
 
     pub fn get_device_id(&self, dv_ind: u32) -> Result<u16, RocmErr> {
-        let res = unsafe { device_id(dv_ind) };
-        check_res(res.status)?;
-        Ok(res.data)
+        Ok(unsafe { device_id(dv_ind).check()? }.data)
     }
 
     pub fn get_device_name(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        let res = unsafe { device_name(dv_ind) };
-        check_res(res.status)?;
-        string_from_ptr(res.data)
+        unsafe { device_name(dv_ind).check()?.into_string() }
     }
 
     pub fn get_device_vendor_id(&self, dv_ind: u32) -> Result<u16, RocmErr> {
-        let res = unsafe { device_vendor_id(dv_ind) };
-        check_res(res.status)?;
-        Ok(res.data)
+        Ok(unsafe { device_vendor_id(dv_ind).check()? }.data)
     }
 
     pub fn get_device_brand(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        let res: ResultStr = unsafe { device_brand(dv_ind) };
-        check_res(res.status)?;
-        string_from_ptr(res.data)
+        unsafe { device_brand(dv_ind).check()? }.into_string()
     }
 
     pub fn get_device_vendor_name(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        let res: ResultStr = unsafe { device_vendor_name(dv_ind) };
-        check_res(res.status)?;
-        string_from_ptr(res.data)
+        unsafe { device_vendor_name(dv_ind).check()?.into_string() }
     }
     pub fn get_device_vram_vendor_name(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        let res: ResultStr = unsafe { device_vram_vendor_name(dv_ind) };
-        check_res(res.status)?;
-        string_from_ptr(res.data)
+        unsafe { device_vram_vendor_name(dv_ind).check()?.into_string() }
     }
 
     pub fn get_device_serial_number(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        let res: ResultStr = unsafe { device_serial(dv_ind) };
-        check_res(res.status)?;
-        string_from_ptr(res.data)
+        unsafe { device_serial(dv_ind).check()?.into_string() }
     }
 
     pub fn get_device_subsystem_id(&self, dv_ind: u32) -> Result<u16, RocmErr> {
-        let res = unsafe { device_subsystem_id(dv_ind) };
-        check_res(res.status)?;
-
-        return Ok(res.data);
+        Ok(unsafe { device_subsystem_id(dv_ind).check()? }.data)
     }
 
     pub fn get_device_subsystem_name(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        let res = unsafe { device_subsystem_name(dv_ind) };
-        check_res(res.status)?;
-        string_from_ptr(res.data)
+        unsafe { device_subsystem_name(dv_ind).check()?.into_string() }
     }
 
     pub fn get_device_drm_render_minor(&self, dv_ind: u32) -> Result<u32, RocmErr> {
-        let res = unsafe { device_drm_render(dv_ind) };
-        check_res(res.status)?;
-        Ok(res.data)
+        Ok(unsafe { device_drm_render(dv_ind).check()? }.data)
     }
 
     pub fn get_device_subsystem_vendor_id(&self, dv_ind: u32) -> Result<u16, RocmErr> {
-        let res = unsafe { device_subsystem_vendor_id(dv_ind) };
-        check_res(res.status)?;
-        Ok(res.data)
+        Ok(unsafe { device_subsystem_vendor_id(dv_ind) }.check()?.data)
     }
 
     pub fn get_device_unique_id(&self, dv_ind: u32) -> Result<u64, RocmErr> {
-        let res = unsafe { device_unique_id(dv_ind) };
-        check_res(res.status)?;
-        Ok(res.data)
+        Ok(unsafe { device_unique_id(dv_ind) }.check()?.data)
     }
 
     pub fn get_device_pcie_data<'a>(&self, dv_ind: u32) -> Result<Pcie<'a>, RocmErr> {
@@ -155,7 +125,10 @@ mod test {
                         );
                         println!("pcie data: {:?}", res.get_device_pcie_data(0));
                         println!("power data: {:?}", res.get_device_power_data(0));
-                        println!("memory data: {:?}", res.get_device_memory_data(0).unwrap().into_f64_gb());
+                        println!(
+                            "memory data: {:?}",
+                            res.get_device_memory_data(0).unwrap().into_f64_gb()
+                        );
                     }
                     Err(err) => println!("{:?}", err),
                 }

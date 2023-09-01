@@ -63,10 +63,3 @@ typedef struct result_power {
   uint64_t *power_cap_min_sensor;
   uint64_t *power_cap_max_sensor;
 } result_power;
-
-typedef struct result_uint64_t_dual
-{
-  uint16_t status;
-  uint64_t data1;
-  uint64_t data2;
-} result_uint64_t_dual;

@@ -23,21 +23,13 @@ pub struct Memory<T> {
 
 impl Memory<u64> {
     pub(crate) unsafe fn get_memory(dv_ind: u32) -> Result<Memory<u64>, RocmErr> {
-        let total_vram = mem_total_vram(dv_ind);
-        let total_vis_vram = mem_total_vis_vram(dv_ind);
-        let total_gtt = mem_total_gtt(dv_ind);
-        let used_vram = mem_used_vram(dv_ind);
-        let used_vis_vram = mem_used_vis_vram(dv_ind);
-        let used_gtt = mem_used_gtt(dv_ind);
-        let busy_percent = memory_busy_percent(dv_ind);
-
-        check_res(total_vram.status)?;
-        check_res(total_vis_vram.status)?;
-        check_res(total_gtt.status)?;
-        check_res(used_vram.status)?;
-        check_res(used_vis_vram.status)?;
-        check_res(used_gtt.status)?;
-        check_res(busy_percent.status)?;
+        let total_vram = mem_total_vram(dv_ind).check()?;
+        let total_vis_vram = mem_total_vis_vram(dv_ind).check()?;
+        let total_gtt = mem_total_gtt(dv_ind).check()?;
+        let used_vram = mem_used_vram(dv_ind).check()?;
+        let used_vis_vram = mem_used_vis_vram(dv_ind).check()?;
+        let used_gtt = mem_used_gtt(dv_ind).check()?;
+        let busy_percent = memory_busy_percent(dv_ind).check()?;
 
         Ok(Memory {
             total: MemoryTotal {

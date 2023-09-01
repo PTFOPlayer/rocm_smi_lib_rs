@@ -72,7 +72,6 @@ pub(crate) struct ResultPcieBandwidth {
     pub(crate) frequencies: *const u64,
 }
 
-
 #[repr(C)]
 pub(crate) struct ResultPcieThroughput {
     pub(crate) status: u16,
@@ -92,20 +91,37 @@ pub(crate) struct ResultPower {
     pub(crate) power_cap_max_sensor: *const u64,
 }
 
-#[inline(always)]
-pub(crate) fn check_res(status: u16) -> Result<(), RocmErr> {
-    if status != 0 {
-        return Err(RocmErr::from_u16(status));
-    }
-    Ok(())
+pub(crate) trait Check {
+    fn check(self) -> Result<Self, RocmErr>
+    where
+        Self: Sized;
 }
 
-#[inline(always)]
-pub(crate) fn string_from_ptr(ptr: *mut i8) -> Result<String, RocmErr> {
-    let c_str = unsafe { std::ffi::CStr::from_ptr(ptr) };
-    let data = c_str.to_str().to_owned();
-    match data {
-        Ok(res) => Ok(res.to_owned()),
-        Err(_) => Err(RocmErr::RsmiStringConversionError),
+macro_rules! auto_impl {
+    ($($t:ty) +) => {
+        $(impl Check for $t {
+            #[inline(always)]
+            fn check(self) -> Result<Self, RocmErr>
+            {
+                if self.status != 0 {
+                    return Err(RocmErr::from_u16(self.status));
+                }
+                Ok(self)
+            }
+        })*
+    }
+}
+
+auto_impl!(ResultUint16T ResultUint32T ResultUint64T ResultStr ResultPcieBandwidth ResultPcieThroughput ResultPower);
+
+impl ResultStr {
+    #[inline(always)]
+    pub(crate) fn into_string(self) -> Result<String, RocmErr> {
+        let c_str = unsafe { std::ffi::CStr::from_ptr(self.data) };
+        let data = c_str.to_str().to_owned();
+        match data {
+            Ok(res) => Ok(res.to_owned()),
+            Err(_) => Err(RocmErr::RsmiStringConversionError),
+        }
     }
 }
