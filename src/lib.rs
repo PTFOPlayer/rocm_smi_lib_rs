@@ -10,15 +10,20 @@ pub mod queries;
 mod device;
 use device::*;
 
-pub struct RocmSmi {}
+#[derive(Debug)]
+pub struct RocmSmi {
+    pub device_count: u32,
+}
 
 impl RocmSmi {
     pub fn init() -> Result<Self, RocmErr> {
         let code = unsafe { init_c() };
         if code == 0 {
-            return Ok(RocmSmi {});
+            return Ok(RocmSmi {
+                device_count: unsafe { num_devices().check()? }.data,
+            });
         }
-        Err(RocmErr::from_u16(code))
+        return Err(RocmErr::from_u16(code));
     }
 
     pub fn into_first_device(self) -> Result<RocmSmiDevice, RocmErr> {
@@ -29,8 +34,8 @@ impl RocmSmi {
         RocmSmiDevice::new_from_rocm(self, dv_ind)
     }
 
-    pub fn get_device_count(&self) -> Result<u32, RocmErr> {
-        Ok(unsafe { num_devices().check()? }.data)
+    pub fn get_device_count(&self) -> u32 {
+        self.device_count
     }
 
     pub fn get_device_id(&self, dv_ind: u32) -> Result<u16, RocmErr> {
@@ -101,37 +106,32 @@ mod test {
     fn full_test() {
         match RocmSmi::init() {
             Ok(res) => {
-                let device_count = res.get_device_count();
-                match device_count {
-                    Ok(count) => {
-                        println!("Count: {:?}", count);
-                        println!("ID: {:?}", res.get_device_id(0));
-                        println!("name: {:?}", res.get_device_name(0));
-                        println!("vendor id: {:?}", res.get_device_vendor_id(0));
-                        println!("brand: {:?}", res.get_device_brand(0));
-                        println!("vendor name: {:?}", res.get_device_vendor_name(0));
-                        println!("vram vendor name: {:?}", res.get_device_vram_vendor_name(0));
-                        println!("serial: {:?}", res.get_device_serial_number(0));
-                        println!("subsystem id: {:?}", res.get_device_subsystem_id(0));
-                        println!("subsystem name: {:?}", res.get_device_subsystem_name(0));
-                        println!("drm render minor: {:?}", res.get_device_drm_render_minor(0));
-                        println!(
-                            "subsystem vendor id {:?}",
-                            res.get_device_subsystem_vendor_id(0)
-                        );
-                        println!(
-                            "unique id (might fail if there is only one gpu) {:?}",
-                            res.get_device_unique_id(0)
-                        );
-                        println!("pcie data: {:?}", res.get_device_pcie_data(0));
-                        println!("power data: {:?}", res.get_device_power_data(0));
-                        println!(
-                            "memory data: {:?}",
-                            res.get_device_memory_data(0).unwrap().into_f64_gb()
-                        );
-                    }
-                    Err(err) => println!("{:?}", err),
-                }
+                let count = res.get_device_count();
+                println!("Count: {:?}", count);
+                println!("ID: {:?}", res.get_device_id(0));
+                println!("name: {:?}", res.get_device_name(0));
+                println!("vendor id: {:?}", res.get_device_vendor_id(0));
+                println!("brand: {:?}", res.get_device_brand(0));
+                println!("vendor name: {:?}", res.get_device_vendor_name(0));
+                println!("vram vendor name: {:?}", res.get_device_vram_vendor_name(0));
+                println!("serial: {:?}", res.get_device_serial_number(0));
+                println!("subsystem id: {:?}", res.get_device_subsystem_id(0));
+                println!("subsystem name: {:?}", res.get_device_subsystem_name(0));
+                println!("drm render minor: {:?}", res.get_device_drm_render_minor(0));
+                println!(
+                    "subsystem vendor id {:?}",
+                    res.get_device_subsystem_vendor_id(0)
+                );
+                println!(
+                    "unique id (might fail if there is only one gpu) {:?}",
+                    res.get_device_unique_id(0)
+                );
+                println!("pcie data: {:?}", res.get_device_pcie_data(0));
+                println!("power data: {:?}", res.get_device_power_data(0));
+                println!(
+                    "memory data: {:?}",
+                    res.get_device_memory_data(0).unwrap().into_f64_gb()
+                );
             }
             Err(err) => println!("{:?}", err),
         }

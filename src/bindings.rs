@@ -91,10 +91,8 @@ pub(crate) struct ResultPower {
     pub(crate) power_cap_max_sensor: *const u64,
 }
 
-pub(crate) trait Check {
-    fn check(self) -> Result<Self, RocmErr>
-    where
-        Self: Sized;
+pub(crate) trait Check: Sized {
+    fn check(self) -> Result<Self, RocmErr>;
 }
 
 macro_rules! auto_impl {

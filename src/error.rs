@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum RocmErr {
     RsmiStatusSuccess = 0,
     RsmiStatusInvalidArgs = 1,
@@ -54,33 +54,9 @@ impl RocmErr {
     }
 
     pub fn into_u16(self) -> u16 {
-        match self {
-            RocmErr::RsmiStatusSuccess => 0 ,
-            RocmErr::RsmiStatusInvalidArgs => 1 ,
-            RocmErr::RsmiStatusNotSupported => 2 ,
-            RocmErr::RsmiStatusFileError => 3 ,
-            RocmErr::RsmiStatusPermission => 4 ,
-            RocmErr::RsmiStatusOutOfResources => 5 ,
-            RocmErr::RsmiStatusInternalException => 6 ,
-            RocmErr::RsmiStatusInputOutOfBounds => 7 ,
-            RocmErr::RsmiStatusInitError => 8 ,
-            RocmErr::RsmiStatusNotYetImplemented => 9 ,
-            RocmErr::RsmiStatusNotFound => 10 ,
-            RocmErr::RsmiStatusInsufficientSize => 11 ,
-            RocmErr::RsmiStatusInterrupt => 12 ,
-            RocmErr::RsmiStatusUnexpectedSize => 13 ,
-            RocmErr::RsmiStatusNoData => 14 ,
-            RocmErr::RsmiStatusUnexpectedData => 15 ,
-            RocmErr::RsmiStatusBusy => 16 ,
-            RocmErr::RsmiStatusRefcountOverflow => 17 ,
-            RocmErr::RsmiStatusSettingUnavailable => 18 ,
-            RocmErr::RsmiStatusAmdgpuRestartErr => 19 ,
-            RocmErr::RsmiStatusUnknownError => 20,
-            RocmErr::RsmiStringConversionError => 21
-        }
+        self as u16
     }
 }
-
 
 impl ToString for RocmErr {
     fn to_string(&self) -> String {
