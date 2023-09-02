@@ -63,3 +63,11 @@ typedef struct result_power {
   uint64_t *power_cap_min_sensor;
   uint64_t *power_cap_max_sensor;
 } result_power;
+
+typedef struct result_fans {
+  uint16_t status;
+  uint16_t sensors;
+  int64_t *fan_rpm_per_sensor;
+  int64_t *fan_speed_per_sensor;
+  uint64_t *max_fan_speed_per_sensor;
+} result_fans;

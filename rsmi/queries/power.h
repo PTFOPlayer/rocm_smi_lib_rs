@@ -58,7 +58,7 @@ result_power power_data(uint32_t dv_ind)
     return res;
   }
 
-  while (ret_ave == ret_cap == 0)
+  while (ret_ave == ret_cap == ret_range == 0)
   {
     ret_ave = rsmi_dev_power_ave_get(dv_ind, count, &pwr_ave[count]);
     ret_cap = rsmi_dev_power_cap_get(dv_ind, count, &pwr_cap[count]);
