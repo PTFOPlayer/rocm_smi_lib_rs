@@ -3,7 +3,7 @@ use bindings::*;
 
 pub mod error;
 use error::*;
-use queries::{memory::Memory, pcie::Pcie, power::Power};
+use queries::{memory::Memory, pcie::Pcie, physical::Fans, power::Power};
 
 pub mod queries;
 
@@ -96,6 +96,10 @@ impl RocmSmi {
     pub fn get_device_memory_data(&self, dv_ind: u32) -> Result<Memory<u64>, RocmErr> {
         unsafe { Memory::get_memory(dv_ind) }
     }
+
+    pub fn get_device_fans_data(&self, dv_ind: u32) -> Result<Fans, RocmErr> {
+        unsafe { Fans::get_fans(dv_ind) }
+    }
 }
 
 #[cfg(test)]
@@ -132,6 +136,7 @@ mod test {
                     "memory data: {:?}",
                     res.get_device_memory_data(0).unwrap().into_f64_gb()
                 );
+                println!("fans data: {:?}", res.get_device_fans_data(0).unwrap());
             }
             Err(err) => println!("{:?}", err),
         }

@@ -1,6 +1,6 @@
 use crate::{
     error::RocmErr,
-    queries::{memory::Memory, pcie::Pcie, power::Power},
+    queries::{memory::Memory, pcie::Pcie, power::Power, physical::Fans},
     RocmSmi,
 };
 
@@ -84,5 +84,9 @@ impl RocmSmiDevice {
 
     pub fn get_memory_data(&self) -> Result<Memory<u64>, RocmErr> {
         self.rocm.get_device_memory_data(self.id)
+    }
+
+    pub fn get_fans_data(&self) -> Result<Fans, RocmErr> {
+        self.rocm.get_device_fans_data(self.id)
     }
 }
