@@ -71,3 +71,7 @@ result_fans fans(uint32_t dv_ind)
 
     return res;
 }
+
+result_int64_t temperature(uint32_t dv_ind) {
+    
+}

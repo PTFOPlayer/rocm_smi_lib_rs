@@ -14,7 +14,7 @@ pub struct Power<'a> {
 
 impl Power<'_> {
     #[inline(always)]
-    pub(crate) unsafe fn get_power(dv_ind: u32) -> Result<Power<'static>, RocmErr> {
+    pub(crate) unsafe fn get_power<'a>(dv_ind: u32) -> Result<Power<'a>, RocmErr> {
         let data = power_data(dv_ind).check()?;
         Ok(Power {
             sensor_count: data.sensors,

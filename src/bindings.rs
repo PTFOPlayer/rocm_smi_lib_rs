@@ -37,6 +37,7 @@ extern "C" {
     pub(crate) fn mem_used_vis_vram(dv_ind: u32) -> ResultUint64T;
     pub(crate) fn mem_used_gtt(dv_ind: u32) -> ResultUint64T;
     pub(crate) fn memory_busy_percent(dv_ind: u32) -> ResultUint32T;
+    pub(crate) fn fans(dv_ind: u32) -> ResultFans;
 }
 
 #[repr(C)]
@@ -91,6 +92,15 @@ pub(crate) struct ResultPower {
     pub(crate) power_cap_max_sensor: *const u64,
 }
 
+#[repr(C)]
+pub(crate) struct ResultFans {
+    pub(crate) status: u16,
+    pub(crate) sensors: u16,
+    pub(crate) fan_rpm_per_sensor: *const i64,
+    pub(crate) fan_speed_per_sensor: *const i64,
+    pub(crate) max_fan_speed_per_sensor: *const u64,
+}
+
 pub(crate) trait Check: Sized {
     fn check(self) -> Result<Self, RocmErr>;
 }
@@ -110,7 +120,7 @@ macro_rules! auto_impl {
     }
 }
 
-auto_impl!(ResultUint16T ResultUint32T ResultUint64T ResultStr ResultPcieBandwidth ResultPcieThroughput ResultPower);
+auto_impl!(ResultUint16T ResultUint32T ResultUint64T ResultStr ResultPcieBandwidth ResultPcieThroughput ResultPower ResultFans);
 
 impl ResultStr {
     #[inline(always)]
