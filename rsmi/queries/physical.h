@@ -72,6 +72,17 @@ result_fans fans(uint32_t dv_ind)
     return res;
 }
 
-result_int64_t temperature(uint32_t dv_ind) {
-    
+result_int64_t temperature(uint32_t dv_ind, uint32_t sensor, rsmi_temperature_metric_t metric)
+{
+    if (init.status != RSMI_STATUS_SUCCESS)
+    {
+        result_int64_t error = {init.status, 0};
+        return error;
+    }
+
+    int64_t temp;
+    rsmi_status_t ret = rsmi_dev_temp_metric_get(dv_ind, sensor, metric, &temp);
+
+    result_int64_t res = {ret, temp};
+    return res;
 }

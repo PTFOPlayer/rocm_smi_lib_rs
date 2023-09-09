@@ -38,12 +38,49 @@ extern "C" {
     pub(crate) fn mem_used_gtt(dv_ind: u32) -> ResultUint64T;
     pub(crate) fn memory_busy_percent(dv_ind: u32) -> ResultUint32T;
     pub(crate) fn fans(dv_ind: u32) -> ResultFans;
+    pub(crate) fn temperature(dv_ind: u32, sensor: RsmiTemperatureSensor, metric: RsmiTemperatureMetric) -> ResultInt64T;
+}
+
+#[repr(C)]
+pub enum RsmiTemperatureMetric {
+    RsmiTempCurrent,
+    RsmiTempMax,
+    RsmiTempMin,
+    RsmiTempMaxHyst,
+    RsmiTempMinHyst,
+    RsmiTempCritical,
+    RsmiTempCriticalHyst,
+    RsmiTempEmergency,
+    RsmiTempEmergencyHyst,
+    RsmiTempCritMin,
+    RsmiTempCritMinHyst,
+    RsmiTempOffset,
+    RsmiTempLowest,
+    RsmiTempHighest,
+}
+
+#[repr(C)]
+pub enum RsmiTemperatureSensor {
+    RsmiTempTypeEdge,
+    RsmiTempTypeJunction,
+    RsmiTempTypeMemory,
+    RsmiTempTypeHbm0,
+    RsmiTempTypeHbm1,
+    RsmiTempTypeHbm2,
+    RsmiTempTypeHbm3,
+    RsmiTempTypeInvalid,
 }
 
 #[repr(C)]
 pub(crate) struct ResultStr {
     pub(crate) status: u16,
     pub(crate) data: *mut c_char,
+}
+
+#[repr(C)]
+pub(crate) struct ResultInt64T {
+    pub(crate) status: u16,
+    pub(crate) data: i64,
 }
 
 #[repr(C)]
@@ -120,7 +157,7 @@ macro_rules! auto_impl {
     }
 }
 
-auto_impl!(ResultUint16T ResultUint32T ResultUint64T ResultStr ResultPcieBandwidth ResultPcieThroughput ResultPower ResultFans);
+auto_impl!(ResultUint16T ResultUint32T ResultUint64T ResultInt64T ResultStr ResultPcieBandwidth ResultPcieThroughput ResultPower ResultFans);
 
 impl ResultStr {
     #[inline(always)]

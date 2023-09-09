@@ -100,11 +100,20 @@ impl RocmSmi {
     pub fn get_device_fans_data(&self, dv_ind: u32) -> Result<Fans, RocmErr> {
         unsafe { Fans::get_fans(dv_ind) }
     }
+
+    pub fn get_device_temperature_metric(
+        &self,
+        dv_ind: u32,
+        sensor: RsmiTemperatureSensor,
+        metric: RsmiTemperatureMetric,
+    ) -> Result<f64, RocmErr> {
+        Ok(unsafe { temperature(dv_ind, sensor, metric).check()?.data as f64 / 1000.})
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::RocmSmi;
+    use crate::{RocmSmi, bindings::RsmiTemperatureSensor};
 
     #[test]
     fn full_test() {
@@ -136,7 +145,9 @@ mod test {
                     "memory data: {:?}",
                     res.get_device_memory_data(0).unwrap().into_f64_gb()
                 );
-                println!("fans data: {:?}", res.get_device_fans_data(0).unwrap());
+                println!("fans data: {:?}", res.get_device_fans_data(0));
+                println!("junction temperature data: {:?}", res.get_device_temperature_metric(0, RsmiTemperatureSensor::RsmiTempTypeJunction, crate::bindings::RsmiTemperatureMetric::RsmiTempCurrent));
+                println!("memory temperature data: {:?}", res.get_device_temperature_metric(0, RsmiTemperatureSensor::RsmiTempTypeMemory, crate::bindings::RsmiTemperatureMetric::RsmiTempCurrent));
             }
             Err(err) => println!("{:?}", err),
         }
