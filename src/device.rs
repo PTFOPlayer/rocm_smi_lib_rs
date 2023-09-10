@@ -1,5 +1,5 @@
 use crate::{
-    bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor},
+    bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
     error::RocmErr,
     queries::{memory::Memory, pcie::Pcie, physical::Fans, power::Power},
     RocmSmi,
@@ -35,7 +35,7 @@ impl RocmSmiDevice {
         self.rocm.get_device_name(self.id)
     }
 
-    pub fn get_vemdor_id(&self) -> Result<u16, RocmErr> {
+    pub fn get_vendor_id(&self) -> Result<u16, RocmErr> {
         self.rocm.get_device_vendor_id(self.id)
     }
 
@@ -98,5 +98,9 @@ impl RocmSmiDevice {
     ) -> Result<f64, RocmErr> {
         self.rocm
             .get_device_temperature_metric(self.id, sensor, metric)
+    }
+
+    pub fn get_voltage_metric(&self, metric: RsmiVoltageMetric) -> Result<f64, RocmErr> {
+        self.rocm.get_device_voltage_metric(self.id, metric)
     }
 }

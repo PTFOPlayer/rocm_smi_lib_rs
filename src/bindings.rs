@@ -37,8 +37,15 @@ extern "C" {
     pub(crate) fn mem_used_vis_vram(dv_ind: u32) -> ResultUint64T;
     pub(crate) fn mem_used_gtt(dv_ind: u32) -> ResultUint64T;
     pub(crate) fn memory_busy_percent(dv_ind: u32) -> ResultUint32T;
+
+    //physical
     pub(crate) fn fans(dv_ind: u32) -> ResultFans;
-    pub(crate) fn temperature(dv_ind: u32, sensor: RsmiTemperatureSensor, metric: RsmiTemperatureMetric) -> ResultInt64T;
+    pub(crate) fn temperature(
+        dv_ind: u32,
+        sensor: RsmiTemperatureSensor,
+        metric: RsmiTemperatureMetric,
+    ) -> ResultInt64T;
+    pub(crate) fn voltage(dv_ind: u32, metric: RsmiVoltageMetric) -> ResultInt64T;
 }
 
 #[repr(C)]
@@ -69,6 +76,18 @@ pub enum RsmiTemperatureSensor {
     RsmiTempTypeHbm2,
     RsmiTempTypeHbm3,
     RsmiTempTypeInvalid,
+}
+
+#[repr(C)]
+pub enum RsmiVoltageMetric {
+    RsmiVoltCurrent,
+    RsmiVoltMax,
+    RsmiVoltMinCrit,
+    RsmiVoltMin,
+    RsmiVoltMaxCrit,
+    RsmiVoltAverage,
+    RsmiVoltLowest,
+    RsmiVoltHighest,
 }
 
 #[repr(C)]

@@ -107,60 +107,67 @@ impl RocmSmi {
         sensor: RsmiTemperatureSensor,
         metric: RsmiTemperatureMetric,
     ) -> Result<f64, RocmErr> {
-        Ok(unsafe { temperature(dv_ind, sensor, metric).check()?.data as f64 / 1000.})
+        Ok(unsafe { temperature(dv_ind, sensor, metric).check()?.data as f64 / 1000. })
+    }
+
+    pub fn get_device_voltage_metric(
+        &self,
+        dv_ind: u32,
+        metric: RsmiVoltageMetric,
+    ) -> Result<f64, RocmErr> {
+        Ok(unsafe { voltage(dv_ind, metric).check()?.data as f64 / 1000. })
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{RocmSmi, bindings::RsmiTemperatureSensor};
+    use crate::{
+        bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
+        error::RocmErr,
+        RocmSmi,
+    };
 
     #[test]
-    fn full_test() {
-        match RocmSmi::init() {
-            Ok(res) => {
-                let count = res.get_device_count();
-                println!("Count: {:?}", count);
-                println!("ID: {:?}", res.get_device_id(0));
-                println!("name: {:?}", res.get_device_name(0));
-                println!("vendor id: {:?}", res.get_device_vendor_id(0));
-                println!("brand: {:?}", res.get_device_brand(0));
-                println!("vendor name: {:?}", res.get_device_vendor_name(0));
-                println!("vram vendor name: {:?}", res.get_device_vram_vendor_name(0));
-                println!("serial: {:?}", res.get_device_serial_number(0));
-                println!("subsystem id: {:?}", res.get_device_subsystem_id(0));
-                println!("subsystem name: {:?}", res.get_device_subsystem_name(0));
-                println!("drm render minor: {:?}", res.get_device_drm_render_minor(0));
-                println!(
-                    "subsystem vendor id {:?}",
-                    res.get_device_subsystem_vendor_id(0)
-                );
-                println!(
-                    "unique id (might fail if there is only one gpu) {:?}",
-                    res.get_device_unique_id(0)
-                );
-                println!("pcie data: {:?}", res.get_device_pcie_data(0));
-                println!("power data: {:?}", res.get_device_power_data(0));
-                println!(
-                    "memory data: {:?}",
-                    res.get_device_memory_data(0).unwrap().into_f64_gb()
-                );
-                println!("fans data: {:?}", res.get_device_fans_data(0));
-                println!("junction temperature data: {:?}", res.get_device_temperature_metric(0, RsmiTemperatureSensor::RsmiTempTypeJunction, crate::bindings::RsmiTemperatureMetric::RsmiTempCurrent));
-                println!("memory temperature data: {:?}", res.get_device_temperature_metric(0, RsmiTemperatureSensor::RsmiTempTypeMemory, crate::bindings::RsmiTemperatureMetric::RsmiTempCurrent));
-            }
-            Err(err) => println!("{:?}", err),
-        }
-    }
+    fn full_test() -> Result<(), RocmErr> {
+        let res = RocmSmi::init()?.into_first_device()?;
+        println!("ID: {:?}", res.get_id());
+        println!("name: {:?}", res.get_name());
+        println!("vendor id: {:?}", res.get_vendor_id());
+        println!("brand: {:?}", res.get_brand());
+        println!("vendor name: {:?}", res.get_vendor_name());
+        println!("vram vendor name: {:?}", res.get_vram_vendor_name());
+        println!("serial: {:?}", res.get_serial_number());
+        println!("subsystem id: {:?}", res.get_subsystem_id());
+        println!("subsystem name: {:?}", res.get_subsystem_name());
+        println!("drm render minor: {:?}", res.get_drm_render_minor());
+        println!("subsystem vendor id {:?}", res.get_subsystem_vendor_id());
+        println!(
+            "unique id (might fail if there is only one gpu) {:?}",
+            res.get_unique_id()
+        );
+        println!("pcie data: {:?}", res.get_pcie_data());
+        println!("power data: {:?}", res.get_power_data());
+        println!("memory data: {:?}", res.get_memory_data());
+        println!("fans data: {:?}", res.get_fans_data());
+        println!(
+            "junction temperature data: {:?}",
+            res.get_temperature_metric(
+                RsmiTemperatureSensor::RsmiTempTypeJunction,
+                RsmiTemperatureMetric::RsmiTempCurrent
+            )
+        );
+        println!(
+            "memory temperature data: {:?}",
+            res.get_temperature_metric(
+                RsmiTemperatureSensor::RsmiTempTypeMemory,
+                RsmiTemperatureMetric::RsmiTempCurrent
+            )
+        );
+        println!(
+            "voltage data: {:?}",
+            res.get_voltage_metric(RsmiVoltageMetric::RsmiVoltCurrent)
+        );
 
-    #[test]
-    fn device_test() {
-        match RocmSmi::init() {
-            Ok(res) => match res.into_first_device() {
-                Ok(dev) => println!("succesfully got first device: {:?}", dev.get_brand()),
-                Err(err) => println!("{:?}", err),
-            },
-            Err(err) => println!("{:?}", err),
-        }
+        Ok(())
     }
 }

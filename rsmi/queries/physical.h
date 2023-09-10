@@ -86,3 +86,17 @@ result_int64_t temperature(uint32_t dv_ind, uint32_t sensor, rsmi_temperature_me
     result_int64_t res = {ret, temp};
     return res;
 }
+
+result_int64_t voltage(uint32_t dv_ind, rsmi_voltage_metric_t metric)
+{
+    if (init.status != RSMI_STATUS_SUCCESS)
+    {
+        result_int64_t error = {init.status, 0};
+        return error;
+    }
+    int64_t voltage;
+    rsmi_status_t ret = rsmi_dev_volt_metric_get(dv_ind, RSMI_VOLT_TYPE_VDDGFX, metric, &voltage);
+
+    result_int64_t res = {ret, voltage};
+    return res;
+}

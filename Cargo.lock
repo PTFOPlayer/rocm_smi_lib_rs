@@ -28,7 +28,7 @@ checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
 
 [[package]]
 name = "rocm_smi_lib"
-version = "0.1.3-beta"
+version = "0.1.4-beta"
 dependencies = [
  "cmake",
  "libc",
