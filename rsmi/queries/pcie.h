@@ -12,6 +12,23 @@
 #include "./init.h"
 #endif
 
+typedef struct result_pcie_bandwidth
+{
+  uint16_t status;
+  uint32_t current_index;
+  uint32_t num_supported;
+  uint32_t *lines;
+  uint64_t *frequencies;
+} result_pcie_bandwidth;
+
+typedef struct result_pcie_throughput
+{
+  uint16_t status;
+  uint64_t sent;
+  uint64_t recived;
+  uint64_t max_pkg_size;
+} result_pcie_throughput;
+
 result_pcie_bandwidth pci_bandwidth(uint32_t dv_ind)
 {
   if (init.status != RSMI_STATUS_SUCCESS)
