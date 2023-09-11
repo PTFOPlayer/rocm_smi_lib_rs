@@ -3,7 +3,7 @@ use bindings::*;
 
 pub mod error;
 use error::*;
-use queries::{memory::Memory, pcie::Pcie, physical::Fans, power::Power};
+use queries::{memory::Memory, pcie::Pcie, physical::Fans, power::Power, performance::PerformanceCounters};
 
 pub mod queries;
 
@@ -117,6 +117,10 @@ impl RocmSmi {
     ) -> Result<f64, RocmErr> {
         Ok(unsafe { voltage(dv_ind, metric).check()?.data as f64 / 1000. })
     }
+
+    pub fn get_device_busy_percent(&self, dv_ind: u32) -> Result<u32, RocmErr>{
+        Ok(unsafe { busy_percent(dv_ind).check()?.data })
+    }
 }
 
 #[cfg(test)]
@@ -124,7 +128,7 @@ mod test {
     use crate::{
         bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
         error::RocmErr,
-        RocmSmi,
+        RocmSmi, queries::performance::PerformanceCounters,
     };
 
     #[test]
@@ -167,6 +171,11 @@ mod test {
             "voltage data: {:?}",
             res.get_voltage_metric(RsmiVoltageMetric::RsmiVoltCurrent)
         );
+        println!("busy percent: {:?}", res.get_busy_percent());
+
+        unsafe {
+            println!("util c: {:?}", PerformanceCounters::get_counters(0));
+        }
 
         Ok(())
     }

@@ -12,6 +12,16 @@
 #include "./init.h"
 #endif
 
+typedef struct result_power {
+  uint16_t status;
+  uint16_t sensors;
+  uint64_t default_power_cap;
+  uint64_t *power_per_sensor;
+  uint64_t *power_cap_per_sensor;
+  uint64_t *power_cap_min_sensor;
+  uint64_t *power_cap_max_sensor;
+} result_power;
+
 result_power power_data(uint32_t dv_ind)
 {
   result_power res = {

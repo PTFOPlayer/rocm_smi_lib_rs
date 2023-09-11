@@ -16,3 +16,4 @@
 #include "queries/power.h"
 #include "queries/memory.h"
 #include "queries/physical.h"
+#include "queries/performance.h"

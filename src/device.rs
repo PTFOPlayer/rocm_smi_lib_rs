@@ -103,4 +103,8 @@ impl RocmSmiDevice {
     pub fn get_voltage_metric(&self, metric: RsmiVoltageMetric) -> Result<f64, RocmErr> {
         self.rocm.get_device_voltage_metric(self.id, metric)
     }
+
+    pub fn get_busy_percent(&self) -> Result<u32, RocmErr> {
+        self.rocm.get_device_busy_percent(self.id)
+    } 
 }

@@ -12,6 +12,14 @@
 #include "./init.h"
 #endif
 
+typedef struct result_fans {
+  uint16_t status;
+  uint16_t sensors;
+  int64_t *fan_rpm_per_sensor;
+  int64_t *fan_speed_per_sensor;
+  uint64_t *max_fan_speed_per_sensor;
+} result_fans;
+
 result_fans fans(uint32_t dv_ind)
 {
     result_fans res = {0, 0, NULL, NULL, NULL};

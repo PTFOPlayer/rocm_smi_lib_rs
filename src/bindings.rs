@@ -46,6 +46,10 @@ extern "C" {
         metric: RsmiTemperatureMetric,
     ) -> ResultInt64T;
     pub(crate) fn voltage(dv_ind: u32, metric: RsmiVoltageMetric) -> ResultInt64T;
+
+    //performance
+    pub(crate) fn util_counters(dv_ind: u32) -> ResultUtilCounter;
+    pub(crate) fn busy_percent(dv_ind: u32) -> ResultUint32T;
 }
 
 #[repr(C)]
@@ -157,6 +161,13 @@ pub(crate) struct ResultFans {
     pub(crate) max_fan_speed_per_sensor: *const u64,
 }
 
+#[repr(C)]
+pub(crate) struct ResultUtilCounter {
+    pub(crate) status: u16,
+    pub(crate) counter_gfx: u64,
+    pub(crate) counter_mem: u64,
+}
+
 pub(crate) trait Check: Sized {
     fn check(self) -> Result<Self, RocmErr>;
 }
@@ -176,7 +187,7 @@ macro_rules! auto_impl {
     }
 }
 
-auto_impl!(ResultUint16T ResultUint32T ResultUint64T ResultInt64T ResultStr ResultPcieBandwidth ResultPcieThroughput ResultPower ResultFans);
+auto_impl!(ResultUint16T ResultUint32T ResultUint64T ResultInt64T ResultStr ResultPcieBandwidth ResultPcieThroughput ResultPower ResultFans ResultUtilCounter);
 
 impl ResultStr {
     #[inline(always)]
