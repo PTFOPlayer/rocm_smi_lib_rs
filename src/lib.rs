@@ -3,7 +3,7 @@ use bindings::*;
 
 pub mod error;
 use error::*;
-use queries::{memory::Memory, pcie::Pcie, physical::Fans, power::Power, performance::PerformanceCounters};
+use queries::{identifiers::Identifiers, memory::Memory, pcie::Pcie, physical::Fans, power::Power};
 
 pub mod queries;
 
@@ -38,51 +38,8 @@ impl RocmSmi {
         self.device_count
     }
 
-    pub fn get_device_id(&self, dv_ind: u32) -> Result<u16, RocmErr> {
-        Ok(unsafe { device_id(dv_ind).check()? }.data)
-    }
-
-    pub fn get_device_name(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        unsafe { device_name(dv_ind).check()?.into_string() }
-    }
-
-    pub fn get_device_vendor_id(&self, dv_ind: u32) -> Result<u16, RocmErr> {
-        Ok(unsafe { device_vendor_id(dv_ind).check()? }.data)
-    }
-
-    pub fn get_device_brand(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        unsafe { device_brand(dv_ind).check()? }.into_string()
-    }
-
-    pub fn get_device_vendor_name(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        unsafe { device_vendor_name(dv_ind).check()?.into_string() }
-    }
-    pub fn get_device_vram_vendor_name(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        unsafe { device_vram_vendor_name(dv_ind).check()?.into_string() }
-    }
-
-    pub fn get_device_serial_number(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        unsafe { device_serial(dv_ind).check()?.into_string() }
-    }
-
-    pub fn get_device_subsystem_id(&self, dv_ind: u32) -> Result<u16, RocmErr> {
-        Ok(unsafe { device_subsystem_id(dv_ind).check()? }.data)
-    }
-
-    pub fn get_device_subsystem_name(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        unsafe { device_subsystem_name(dv_ind).check()?.into_string() }
-    }
-
-    pub fn get_device_drm_render_minor(&self, dv_ind: u32) -> Result<u32, RocmErr> {
-        Ok(unsafe { device_drm_render(dv_ind).check()? }.data)
-    }
-
-    pub fn get_device_subsystem_vendor_id(&self, dv_ind: u32) -> Result<u16, RocmErr> {
-        Ok(unsafe { device_subsystem_vendor_id(dv_ind) }.check()?.data)
-    }
-
-    pub fn get_device_unique_id(&self, dv_ind: u32) -> Result<u64, RocmErr> {
-        Ok(unsafe { device_unique_id(dv_ind) }.check()?.data)
+    pub fn get_device_identifiers(&self, dv_ind: u32) -> Result<Identifiers, RocmErr> {
+        unsafe { Identifiers::get_identifiers(dv_ind) }
     }
 
     pub fn get_device_pcie_data<'a>(&self, dv_ind: u32) -> Result<Pcie<'a>, RocmErr> {
@@ -118,7 +75,7 @@ impl RocmSmi {
         Ok(unsafe { voltage(dv_ind, metric).check()?.data as f64 / 1000. })
     }
 
-    pub fn get_device_busy_percent(&self, dv_ind: u32) -> Result<u32, RocmErr>{
+    pub fn get_device_busy_percent(&self, dv_ind: u32) -> Result<u32, RocmErr> {
         Ok(unsafe { busy_percent(dv_ind).check()?.data })
     }
 }
@@ -128,26 +85,18 @@ mod test {
     use crate::{
         bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
         error::RocmErr,
-        RocmSmi, queries::performance::PerformanceCounters,
+        queries::performance::PerformanceCounters,
+        RocmSmi,
     };
 
     #[test]
     fn full_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
-        println!("ID: {:?}", res.get_id());
-        println!("name: {:?}", res.get_name());
-        println!("vendor id: {:?}", res.get_vendor_id());
-        println!("brand: {:?}", res.get_brand());
-        println!("vendor name: {:?}", res.get_vendor_name());
-        println!("vram vendor name: {:?}", res.get_vram_vendor_name());
-        println!("serial: {:?}", res.get_serial_number());
-        println!("subsystem id: {:?}", res.get_subsystem_id());
-        println!("subsystem name: {:?}", res.get_subsystem_name());
-        println!("drm render minor: {:?}", res.get_drm_render_minor());
-        println!("subsystem vendor id {:?}", res.get_subsystem_vendor_id());
+        let identifiers = res.get_identifiers()?;
+        println!("identifiers: {:?}", identifiers);
         println!(
             "unique id (might fail if there is only one gpu) {:?}",
-            res.get_unique_id()
+            identifiers.get_unique_id()
         );
         println!("pcie data: {:?}", res.get_pcie_data());
         println!("power data: {:?}", res.get_power_data());
