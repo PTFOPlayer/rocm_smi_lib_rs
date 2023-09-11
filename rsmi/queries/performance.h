@@ -52,3 +52,48 @@ result_util_counter util_counters(uint32_t dv_ind)
     result_util_counter res = {ret, counters[0].value, counters[1].value};
     return res;
 }
+
+result_uint32_t perf_level(uint32_t dv_ind)
+{
+    if (init.status != RSMI_STATUS_SUCCESS)
+    {
+        result_uint32_t error = {init.status, 0};
+        return error;
+    }
+
+    rsmi_dev_perf_level_t level;
+    rsmi_status_t ret = rsmi_dev_perf_level_get(dv_ind, &level);
+
+    result_uint32_t res = {ret, level};
+    return res;
+}
+
+typedef struct result_overdrive_levels
+{
+    uint16_t status;
+    uint32_t graphics;
+    uint32_t memory;
+} result_overdrive_levels;
+
+result_overdrive_levels overdrive_levels(uint32_t dv_ind)
+{
+    rsmi_status_t ret = init.status;
+    result_overdrive_levels res = {ret, 0, 0};
+    if (ret != RSMI_STATUS_SUCCESS)
+        return res;
+
+    uint32_t graphics, memory;
+
+    ret = rsmi_dev_overdrive_level_get(dv_ind, &graphics);
+    if (ret != RSMI_STATUS_SUCCESS)
+        return res;
+
+    res.graphics = graphics;
+
+    ret = rsmi_dev_mem_overdrive_level_get(dv_ind, &memory);
+    if (ret != RSMI_STATUS_SUCCESS)
+        return res;
+
+    res.memory = memory;
+    return res;
+}
