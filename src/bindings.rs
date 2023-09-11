@@ -50,6 +50,8 @@ extern "C" {
     //performance
     pub(crate) fn util_counters(dv_ind: u32) -> ResultUtilCounter;
     pub(crate) fn busy_percent(dv_ind: u32) -> ResultUint32T;
+    pub(crate) fn perf_level(dv_ind: u32) -> ResultUint32T;
+    pub(crate) fn overdrive_levels(dv_ind: u32) -> ResultOverdriveLevels;
 }
 
 #[repr(C)]
@@ -168,12 +170,19 @@ pub(crate) struct ResultUtilCounter {
     pub(crate) counter_mem: u64,
 }
 
+#[repr(C)]
+pub(crate) struct ResultOverdriveLevels {
+    pub(crate) status: u16,
+    pub(crate) graphics: u32,
+    pub(crate) memory: u32,
+}
+
 pub(crate) trait Check: Sized {
     fn check(self) -> Result<Self, RocmErr>;
 }
 
 macro_rules! auto_impl {
-    ($($t:ty) +) => {
+    ($($t:ty),+) => {
         $(impl Check for $t {
             #[inline(always)]
             fn check(self) -> Result<Self, RocmErr>
@@ -187,7 +196,19 @@ macro_rules! auto_impl {
     }
 }
 
-auto_impl!(ResultUint16T ResultUint32T ResultUint64T ResultInt64T ResultStr ResultPcieBandwidth ResultPcieThroughput ResultPower ResultFans ResultUtilCounter);
+auto_impl!(
+    ResultUint16T,
+    ResultUint32T,
+    ResultUint64T,
+    ResultInt64T,
+    ResultStr,
+    ResultPcieBandwidth,
+    ResultPcieThroughput,
+    ResultPower,
+    ResultFans,
+    ResultUtilCounter,
+    ResultOverdriveLevels
+);
 
 impl ResultStr {
     #[inline(always)]

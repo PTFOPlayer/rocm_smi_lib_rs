@@ -3,7 +3,14 @@ use bindings::*;
 
 pub mod error;
 use error::*;
-use queries::{identifiers::Identifiers, memory::Memory, pcie::Pcie, physical::Fans, power::Power};
+use queries::{
+    identifiers::Identifiers,
+    memory::Memory,
+    pcie::Pcie,
+    performance::{OverdriveLevels, PerformanceCounters, PerformanceLevel},
+    physical::Fans,
+    power::Power,
+};
 
 pub mod queries;
 
@@ -78,6 +85,21 @@ impl RocmSmi {
     pub fn get_device_busy_percent(&self, dv_ind: u32) -> Result<u32, RocmErr> {
         Ok(unsafe { busy_percent(dv_ind).check()?.data })
     }
+
+    pub fn get_device_performance_countes(
+        &self,
+        dv_ind: u32,
+    ) -> Result<PerformanceCounters, RocmErr> {
+        unsafe { PerformanceCounters::get_counters(dv_ind) }
+    }
+
+    pub fn get_device_performance_level(&self, dv_ind: u32) -> Result<PerformanceLevel, RocmErr> {
+        unsafe { PerformanceLevel::get_performance_level(dv_ind) }
+    }
+
+    pub fn get_device_overdrive_levels(&self, dv_ind: u32) -> Result<OverdriveLevels, RocmErr> {
+        unsafe { OverdriveLevels::get_overdrive_levels(dv_ind) }
+    }
 }
 
 #[cfg(test)]
@@ -85,7 +107,6 @@ mod test {
     use crate::{
         bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
         error::RocmErr,
-        queries::performance::PerformanceCounters,
         RocmSmi,
     };
 
@@ -121,11 +142,9 @@ mod test {
             res.get_voltage_metric(RsmiVoltageMetric::RsmiVoltCurrent)
         );
         println!("busy percent: {:?}", res.get_busy_percent());
-
-        unsafe {
-            println!("util c: {:?}", PerformanceCounters::get_counters(0));
-        }
-
+        println!("perf counters: {:?}", res.get_performance_countes());
+        println!("perf level: {:?}", res.get_performance_level());
+        println!("overdrive level: {:?}", res.get_overdrive_levels());
         Ok(())
     }
 }

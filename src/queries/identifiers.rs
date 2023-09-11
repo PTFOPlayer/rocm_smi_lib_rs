@@ -34,11 +34,9 @@ impl Identifiers {
         let drm_render_minor = device_drm_render(dv_ind).check()?.data;
         let subsystem_vendor_id = device_subsystem_vendor_id(dv_ind).check()?.data;
         let unique_id_temp = device_unique_id(dv_ind).check();
-        let unique_id = {
-            match unique_id_temp {
-                Ok(res) => Ok(res.data),
-                Err(err) => Err(err),
-            }
+        let unique_id = match unique_id_temp {
+            Ok(res) => Ok(res.data),
+            Err(err) => Err(err),
         };
 
         Ok(Self {

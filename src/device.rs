@@ -1,7 +1,14 @@
 use crate::{
     bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
     error::RocmErr,
-    queries::{memory::Memory, pcie::Pcie, physical::Fans, power::Power, identifiers::Identifiers},
+    queries::{
+        identifiers::Identifiers,
+        memory::Memory,
+        pcie::Pcie,
+        performance::{OverdriveLevels, PerformanceCounters, PerformanceLevel},
+        physical::Fans,
+        power::Power,
+    },
     RocmSmi,
 };
 
@@ -27,7 +34,7 @@ impl RocmSmiDevice {
         Ok(Self { id, rocm })
     }
 
-    pub fn get_identifiers(&self) -> Result<Identifiers, RocmErr>{
+    pub fn get_identifiers(&self) -> Result<Identifiers, RocmErr> {
         self.rocm.get_device_identifiers(self.id)
     }
 
@@ -62,5 +69,17 @@ impl RocmSmiDevice {
 
     pub fn get_busy_percent(&self) -> Result<u32, RocmErr> {
         self.rocm.get_device_busy_percent(self.id)
-    } 
+    }
+
+    pub fn get_performance_countes(&self) -> Result<PerformanceCounters, RocmErr> {
+        self.rocm.get_device_performance_countes(self.id)
+    }
+
+    pub fn get_performance_level(&self) -> Result<PerformanceLevel, RocmErr> {
+        self.rocm.get_device_performance_level(self.id)
+    }
+
+    pub fn get_overdrive_levels(&self) -> Result<OverdriveLevels, RocmErr> {
+        self.rocm.get_device_overdrive_levels(self.id)
+    }
 }
