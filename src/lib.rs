@@ -7,7 +7,7 @@ use queries::{
     identifiers::Identifiers,
     memory::Memory,
     pcie::Pcie,
-    performance::{OverdriveLevels, PerformanceCounters, PerformanceLevel},
+    performance::{OverdriveLevels, PerformanceCounters, PerformanceLevel, Frequency},
     physical::Fans,
     power::Power,
 };
@@ -100,12 +100,16 @@ impl RocmSmi {
     pub fn get_device_overdrive_levels(&self, dv_ind: u32) -> Result<OverdriveLevels, RocmErr> {
         unsafe { OverdriveLevels::get_overdrive_levels(dv_ind) }
     }
+
+    pub fn get_device_frequency<'a>(&self, dv_ind: u32, freq_type: RsmiClkType) -> Result<Frequency<'a>, RocmErr>{
+        unsafe { Frequency::get_freq(dv_ind, freq_type)}
+    }
 }
 
 #[cfg(test)]
 mod test {
     use crate::{
-        bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
+        bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric, RsmiClkType},
         error::RocmErr,
         RocmSmi,
     };
@@ -145,6 +149,7 @@ mod test {
         println!("perf counters: {:?}", res.get_performance_countes());
         println!("perf level: {:?}", res.get_performance_level());
         println!("overdrive level: {:?}", res.get_overdrive_levels());
+        println!("freq core {:?}", res.get_frequency(RsmiClkType::RsmiClkTypeDf));
         Ok(())
     }
 }

@@ -1,11 +1,11 @@
 use crate::{
-    bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
+    bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric, RsmiClkType},
     error::RocmErr,
     queries::{
         identifiers::Identifiers,
         memory::Memory,
         pcie::Pcie,
-        performance::{OverdriveLevels, PerformanceCounters, PerformanceLevel},
+        performance::{OverdriveLevels, PerformanceCounters, PerformanceLevel, Frequency},
         physical::Fans,
         power::Power,
     },
@@ -81,5 +81,9 @@ impl RocmSmiDevice {
 
     pub fn get_overdrive_levels(&self) -> Result<OverdriveLevels, RocmErr> {
         self.rocm.get_device_overdrive_levels(self.id)
+    }
+
+    pub fn get_frequency<'a>(&self, freq_type: RsmiClkType) -> Result<Frequency<'a>, RocmErr> {
+        self.rocm.get_device_frequency(self.id, freq_type)
     }
 }

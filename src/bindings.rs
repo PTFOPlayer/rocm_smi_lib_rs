@@ -52,6 +52,7 @@ extern "C" {
     pub(crate) fn busy_percent(dv_ind: u32) -> ResultUint32T;
     pub(crate) fn perf_level(dv_ind: u32) -> ResultUint32T;
     pub(crate) fn overdrive_levels(dv_ind: u32) -> ResultOverdriveLevels;
+    pub(crate) fn frequency(dv_ind: u32, clk_type: RsmiClkType) -> ResultFrequencies;
 }
 
 #[repr(C)]
@@ -94,6 +95,17 @@ pub enum RsmiVoltageMetric {
     RsmiVoltAverage,
     RsmiVoltLowest,
     RsmiVoltHighest,
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub enum RsmiClkType {
+    RsmiClkTypeSys,
+    RsmiClkTypeDf,
+    RsmiClkTypeDcef,
+    RsmiClkTypeSoc,
+    RsmiClkTypeMem,
+    RsmiClkTypePcie, 
 }
 
 #[repr(C)]
@@ -177,6 +189,14 @@ pub(crate) struct ResultOverdriveLevels {
     pub(crate) memory: u32,
 }
 
+#[repr(C)]
+pub(crate) struct ResultFrequencies{
+    pub(crate) status: u16,
+    pub(crate) num_supported: u32,
+    pub(crate) current: u32,
+    pub(crate) frequency: *mut u64
+}
+
 pub(crate) trait Check: Sized {
     fn check(self) -> Result<Self, RocmErr>;
 }
@@ -207,7 +227,8 @@ auto_impl!(
     ResultPower,
     ResultFans,
     ResultUtilCounter,
-    ResultOverdriveLevels
+    ResultOverdriveLevels, 
+    ResultFrequencies
 );
 
 impl ResultStr {

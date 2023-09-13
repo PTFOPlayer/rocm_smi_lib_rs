@@ -97,3 +97,30 @@ result_overdrive_levels overdrive_levels(uint32_t dv_ind)
     res.memory = memory;
     return res;
 }
+
+typedef struct result_frequencies
+{
+    uint16_t status;
+    uint32_t num_supported;
+    uint32_t current;
+    uint64_t *frequencies;
+} result_frequencies;
+
+result_frequencies frequency(uint32_t dv_ind, uint32_t clk_type)
+{
+    if (init.status != RSMI_STATUS_SUCCESS)
+    {
+        result_frequencies error = {init.status, 0, 0, NULL};
+        return error;
+    }
+
+    rsmi_frequencies_t freq = {0, 0, {0}};
+    rsmi_status_t ret = rsmi_dev_gpu_clk_freq_get(dv_ind, clk_type, &freq);
+
+    uint64_t *ptr = (uint64_t *)malloc(sizeof(uint64_t) * freq.num_supported);
+    for (int i = 0; i < freq.num_supported; i++)
+        ptr[i] = freq.frequency[i];
+
+    result_frequencies res = {ret, freq.num_supported, freq.current, ptr};
+    return res;
+}
