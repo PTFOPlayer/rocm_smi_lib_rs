@@ -1,4 +1,5 @@
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(C)]
 pub enum RocmErr {
     RsmiStatusSuccess = 0,
     RsmiStatusInvalidArgs = 1,

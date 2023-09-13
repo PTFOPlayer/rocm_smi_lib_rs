@@ -1,5 +1,7 @@
+use std::slice::from_raw_parts;
+
 use crate::{
-    bindings::{overdrive_levels, perf_level, util_counters, Check},
+    bindings::{frequency, overdrive_levels, perf_level, util_counters, Check, RsmiClkType},
     error::RocmErr,
 };
 
@@ -69,16 +71,16 @@ impl ToString for PerformanceLevel {
                 "Rsmi device performance level: Manual".to_owned()
             }
             PerformanceLevel::RsmiDevPerfLevelStableStd => {
-                "Rsmi device performance level: StableStd".to_owned()
+                "Rsmi device performance level: Stable Std".to_owned()
             }
             PerformanceLevel::RsmiDevPerfLevelStablePeak => {
-                "Rsmi device performance level: StablePeak".to_owned()
+                "Rsmi device performance level: Stable Peak".to_owned()
             }
             PerformanceLevel::RsmiDevPerfLevelStableMinMclk => {
-                "Rsmi device performance level: StableMinMclk".to_owned()
+                "Rsmi device performance level: Stable Min Memory Clk".to_owned()
             }
             PerformanceLevel::RsmiDevPerfLevelStableMinSclk => {
-                "Rsmi device performance level: StableMinSclk".to_owned()
+                "Rsmi device performance level: Stable Min Silicone Clk".to_owned()
             }
             PerformanceLevel::RsmiDevPerfLevelDeterminism => {
                 "Rsmi device performance level: Determinism".to_owned()
@@ -102,6 +104,25 @@ impl OverdriveLevels {
         Ok(Self {
             graphics: data.graphics,
             memory: data.memory,
+        })
+    }
+}
+
+#[derive(Debug)]
+pub struct Frequency<'a> {
+    pub clk_type: RsmiClkType,
+    pub current: u64,
+    pub supported: &'a [u64],
+}
+
+impl Frequency<'_> {
+    pub(crate) unsafe fn get_freq<'a>(dv_ind: u32, clk_type: RsmiClkType) -> Result<Self, RocmErr> {
+        let data = frequency(dv_ind, clk_type).check()?;
+        let slice = from_raw_parts(data.frequency, data.num_supported as usize);
+        Ok(Self {
+            clk_type,
+            current: slice[data.current as usize],
+            supported: slice,
         })
     }
 }
