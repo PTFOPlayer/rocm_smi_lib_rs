@@ -1,7 +1,10 @@
 use std::slice::from_raw_parts;
 
 use crate::{
-    bindings::{frequency, overdrive_levels, perf_level, util_counters, Check, RsmiClkType},
+    bindings::{
+        frequency, overdrive_levels, perf_level, util_counters, volt_curve, Check, CurvePoint,
+        RsmiClkType,
+    },
     error::RocmErr,
 };
 
@@ -116,13 +119,58 @@ pub struct Frequency<'a> {
 }
 
 impl Frequency<'_> {
-    pub(crate) unsafe fn get_freq<'a>(dv_ind: u32, clk_type: RsmiClkType) -> Result<Self, RocmErr> {
+    pub(crate) unsafe fn get_freq<'a>(
+        dv_ind: u32,
+        clk_type: RsmiClkType,
+    ) -> Result<Frequency<'a>, RocmErr> {
         let data = frequency(dv_ind, clk_type).check()?;
         let slice = from_raw_parts(data.frequency, data.num_supported as usize);
-        Ok(Self {
+        Ok(Frequency {
             clk_type,
             current: slice[data.current as usize],
             supported: slice,
+        })
+    }
+}
+
+#[derive(Debug)]
+pub struct ClkRange {
+    pub upper_limit: u64,
+    pub lower_limit: u64,
+}
+
+#[derive(Debug)]
+pub struct FrequencyVoltageCurv<'a> {
+    pub sclk_current_range: ClkRange,
+    pub sclk_limits: ClkRange,
+    pub mclk_current_range: ClkRange,
+    pub mclk_limits: ClkRange,
+    pub curve_points: &'a [CurvePoint],
+}
+
+impl FrequencyVoltageCurv<'_> {
+    pub(crate) unsafe fn get_curve<'a>(dv_ind: u32) -> Result<FrequencyVoltageCurv<'a>, RocmErr> {
+        let data = volt_curve(dv_ind).check()?;
+        let slice = from_raw_parts(data.points, data.num_regions as usize);
+
+        Ok(FrequencyVoltageCurv {
+            sclk_current_range: ClkRange {
+                upper_limit: data.curr_sclk_range_max,
+                lower_limit: data.curr_sclk_range_min,
+            },
+            sclk_limits: ClkRange {
+                upper_limit: data.sclk_limit_max,
+                lower_limit: data.sclk_limit_min,
+            },
+            mclk_current_range: ClkRange {
+                upper_limit: data.curr_mclk_range_max,
+                lower_limit: data.curr_mclk_range_min,
+            },
+            mclk_limits: ClkRange {
+                upper_limit: data.mclk_limit_max,
+                lower_limit: data.mclk_limit_min,
+            },
+            curve_points: slice,
         })
     }
 }
