@@ -118,9 +118,69 @@ result_frequencies frequency(uint32_t dv_ind, uint32_t clk_type)
     rsmi_status_t ret = rsmi_dev_gpu_clk_freq_get(dv_ind, clk_type, &freq);
 
     uint64_t *ptr = (uint64_t *)malloc(sizeof(uint64_t) * freq.num_supported);
-    for (int i = 0; i < freq.num_supported; i++)
+    for (size_t i = 0; i < freq.num_supported; i++)
         ptr[i] = freq.frequency[i];
 
     result_frequencies res = {ret, freq.num_supported, freq.current, ptr};
+    return res;
+}
+
+typedef struct result_volt_curve
+{
+    uint16_t status;
+    uint32_t num_regions;
+    uint64_t curr_sclk_range_min;
+    uint64_t curr_sclk_range_max;
+    uint64_t sclk_limit_min;
+    uint64_t sclk_limit_max;
+    uint64_t curr_mclk_range_min;
+    uint64_t curr_mclk_range_max;
+    uint64_t mclk_limit_min;
+    uint64_t mclk_limit_max;
+    rsmi_od_vddc_point_t *points;
+
+} result_volt_curve;
+
+result_volt_curve volt_curve(uint32_t dv_ind)
+{
+    if (init.status != RSMI_STATUS_SUCCESS)
+    {
+        result_volt_curve error = {
+            .status = init.status,
+            .num_regions = 0,
+            .curr_sclk_range_min = 0,
+            .curr_sclk_range_max = 0,
+            .sclk_limit_min = 0,
+            .sclk_limit_max = 0,
+            .curr_mclk_range_min = 0,
+            .curr_mclk_range_max = 0,
+            .mclk_limit_min = 0,
+            .mclk_limit_max = 0,
+            .points = NULL
+        };
+        return error;
+    }
+
+    rsmi_od_volt_freq_data_t volt_c;
+    rsmi_status_t ret = rsmi_dev_od_volt_info_get(dv_ind, &volt_c);
+
+    uint32_t num_regions = volt_c.num_regions;
+    rsmi_od_vddc_point_t *points = (rsmi_od_vddc_point_t *)malloc(sizeof(rsmi_od_vddc_point_t) * num_regions);
+    for (size_t i = 0; i < num_regions; i++)
+        points[i] = volt_c.curve.vc_points[i];
+    
+    result_volt_curve res = {
+        .status = ret,
+        .num_regions = 0,
+        .curr_sclk_range_min = 0,
+        .curr_sclk_range_max = 0,
+        .sclk_limit_min = 0,
+        .sclk_limit_max = 0,
+        .curr_mclk_range_min = 0,
+        .curr_mclk_range_max = 0,
+        .mclk_limit_min = 0,
+        .mclk_limit_max = 0,
+        .points = points
+    };
     return res;
 }

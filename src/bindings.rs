@@ -53,6 +53,7 @@ extern "C" {
     pub(crate) fn perf_level(dv_ind: u32) -> ResultUint32T;
     pub(crate) fn overdrive_levels(dv_ind: u32) -> ResultOverdriveLevels;
     pub(crate) fn frequency(dv_ind: u32, clk_type: RsmiClkType) -> ResultFrequencies;
+    pub(crate) fn volt_curve(dv_ind: u32) -> ResultVoltCurve;
 }
 
 #[repr(C)]
@@ -105,7 +106,7 @@ pub enum RsmiClkType {
     RsmiClkTypeDcef,
     RsmiClkTypeSoc,
     RsmiClkTypeMem,
-    RsmiClkTypePcie, 
+    RsmiClkTypePcie,
 }
 
 #[repr(C)]
@@ -190,11 +191,33 @@ pub(crate) struct ResultOverdriveLevels {
 }
 
 #[repr(C)]
-pub(crate) struct ResultFrequencies{
+pub(crate) struct ResultFrequencies {
     pub(crate) status: u16,
     pub(crate) num_supported: u32,
     pub(crate) current: u32,
-    pub(crate) frequency: *mut u64
+    pub(crate) frequency: *mut u64,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct CurvePoint {
+    frequency: u64,
+    voltage: u64,
+}
+
+#[repr(C)]
+pub(crate) struct ResultVoltCurve {
+    pub(crate) status: u16,
+    pub(crate) num_regions: u32,
+    pub(crate) curr_sclk_range_min: u64,
+    pub(crate) curr_sclk_range_max: u64,
+    pub(crate) sclk_limit_min: u64,
+    pub(crate) sclk_limit_max: u64,
+    pub(crate) curr_mclk_range_min: u64,
+    pub(crate) curr_mclk_range_max: u64,
+    pub(crate) mclk_limit_min: u64,
+    pub(crate) mclk_limit_max: u64,
+    pub(crate) points: *mut CurvePoint,
 }
 
 pub(crate) trait Check: Sized {
@@ -227,8 +250,9 @@ auto_impl!(
     ResultPower,
     ResultFans,
     ResultUtilCounter,
-    ResultOverdriveLevels, 
-    ResultFrequencies
+    ResultOverdriveLevels,
+    ResultFrequencies,
+    ResultVoltCurve
 );
 
 impl ResultStr {
