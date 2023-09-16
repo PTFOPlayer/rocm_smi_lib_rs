@@ -54,6 +54,7 @@ extern "C" {
     pub(crate) fn overdrive_levels(dv_ind: u32) -> ResultOverdriveLevels;
     pub(crate) fn frequency(dv_ind: u32, clk_type: RsmiClkType) -> ResultFrequencies;
     pub(crate) fn volt_curve(dv_ind: u32) -> ResultVoltCurve;
+    pub(crate) fn metrics(dv_ind: u32) -> ResultGpuMetrics;
 }
 
 #[repr(C)]
@@ -220,6 +221,63 @@ pub(crate) struct ResultVoltCurve {
     pub(crate) points: *mut CurvePoint,
 }
 
+#[repr(C)]
+#[derive(Debug)]
+pub(crate) struct ResultGpuMetrics {
+    pub(crate) status: u16,
+    pub(crate) metrics: GpuMetrics,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct GpuMetrics {
+    // Temperature
+    pub temperature_edge: u16,
+    pub temperature_hotspot: u16,
+    pub temperature_mem: u16,
+    pub temperature_vrgfx: u16,
+    pub temperature_vrsoc: u16,
+    pub temperature_vrmem: u16,
+    // Utilization
+    pub average_gfx_activity: u16,
+    pub average_umc_activity: u16, // memory controller
+    pub average_mm_activity: u16,  // UVD or VCN
+    // Power/Energy
+    pub average_socket_power: u16,
+    pub energy_accumulator: u64,
+    // Driver attached timestamp (in ns)
+    pub system_clock_counter: u64,
+    // Average clocks
+    pub average_gfxclk_frequency: u16,
+    pub average_socclk_frequency: u16,
+    pub average_uclk_frequency: u16,
+    pub average_vclk0_frequency: u16,
+    pub average_dclk0_frequency: u16,
+    pub average_vclk1_frequency: u16,
+    pub average_dclk1_frequency: u16,
+    // Current clocks
+    pub current_gfxclk: u16,
+    pub current_socclk: u16,
+    pub current_uclk: u16,
+    pub current_vclk0: u16,
+    pub current_dclk0: u16,
+    pub current_vclk1: u16,
+    pub current_dclk1: u16,
+
+    pub throttle_status: u32,
+
+    pub current_fan_speed: u16,
+
+    pub pcie_link_width: u16,
+    pub pcie_link_speed: u16,
+
+    pub padding: u16,
+
+    pub gfx_activity_acc: u32,
+    pub mem_actvity_acc: u32,
+    pub temperature_hbm: [u16; 4],
+}
+
 pub(crate) trait Check: Sized {
     fn check(self) -> Result<Self, RocmErr>;
 }
@@ -252,7 +310,8 @@ auto_impl!(
     ResultUtilCounter,
     ResultOverdriveLevels,
     ResultFrequencies,
-    ResultVoltCurve
+    ResultVoltCurve,
+    ResultGpuMetrics
 );
 
 impl ResultStr {

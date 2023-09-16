@@ -1,5 +1,5 @@
 use crate::{
-    bindings::{RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
+    bindings::{RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric, GpuMetrics},
     error::RocmErr,
     queries::{
         identifiers::Identifiers,
@@ -83,5 +83,9 @@ impl RocmSmiDevice {
 
     pub fn get_frequency_voltage_curve<'a>(&self) -> Result<FrequencyVoltageCurv<'a>, RocmErr> {
         self.rocm.get_device_frequency_voltage_curve(self.id)
+    }
+
+    pub fn get_full_metrics(&self) -> Result<GpuMetrics, RocmErr> {
+        self.rocm.get_device_full_metrics(self.id)
     }
 }

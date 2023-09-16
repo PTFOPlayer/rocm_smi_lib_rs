@@ -43,6 +43,7 @@ mod test {
         println!("overdrive level: {:?}", res.get_overdrive_levels());
         println!("freq core {:?}", res.get_frequency(RsmiClkType::RsmiClkTypeDf));
         println!("f-v curve: {:?}", res.get_frequency_voltage_curve());
+        println!("metrics: {:?}", res.get_full_metrics());
         Ok(())
     }
 }

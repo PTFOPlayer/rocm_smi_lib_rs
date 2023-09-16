@@ -125,4 +125,8 @@ impl RocmSmi {
     ) -> Result<FrequencyVoltageCurv<'a>, RocmErr> {
         unsafe { FrequencyVoltageCurv::get_curve(dv_ind) }
     }
+
+    pub fn get_device_full_metrics(&self, dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
+        unsafe{ Ok(metrics(dv_ind).check()?.metrics)}
+    }
 }
