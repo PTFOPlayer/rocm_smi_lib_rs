@@ -156,8 +156,7 @@ result_volt_curve volt_curve(uint32_t dv_ind)
             .curr_mclk_range_max = 0,
             .mclk_limit_min = 0,
             .mclk_limit_max = 0,
-            .points = NULL
-        };
+            .points = NULL};
         return error;
     }
 
@@ -168,19 +167,42 @@ result_volt_curve volt_curve(uint32_t dv_ind)
     rsmi_od_vddc_point_t *points = (rsmi_od_vddc_point_t *)malloc(sizeof(rsmi_od_vddc_point_t) * num_regions);
     for (size_t i = 0; i < num_regions; i++)
         points[i] = volt_c.curve.vc_points[i];
-    
+
     result_volt_curve res = {
         .status = ret,
-        .num_regions = 0,
-        .curr_sclk_range_min = 0,
-        .curr_sclk_range_max = 0,
-        .sclk_limit_min = 0,
-        .sclk_limit_max = 0,
-        .curr_mclk_range_min = 0,
-        .curr_mclk_range_max = 0,
-        .mclk_limit_min = 0,
-        .mclk_limit_max = 0,
-        .points = points
-    };
+        .num_regions = volt_c.num_regions,
+        .curr_sclk_range_min = volt_c.curr_sclk_range.lower_bound,
+        .curr_sclk_range_max = volt_c.curr_sclk_range.upper_bound,
+        .sclk_limit_min = volt_c.sclk_freq_limits.lower_bound,
+        .sclk_limit_max = volt_c.sclk_freq_limits.upper_bound,
+        .curr_mclk_range_min = volt_c.curr_mclk_range.lower_bound,
+        .curr_mclk_range_max = volt_c.curr_mclk_range.upper_bound,
+        .mclk_limit_min = volt_c.mclk_freq_limits.lower_bound,
+        .mclk_limit_max = volt_c.mclk_freq_limits.upper_bound,
+        .points = points};
+    return res;
+}
+
+typedef struct result_gpu_metrics
+{
+    uint16_t status;
+    rsmi_gpu_metrics_t metrics;
+} result_gpu_metrics;
+
+result_gpu_metrics metrics(uint32_t dv_ind)
+{
+    result_gpu_metrics res = {
+        .status = init.status,
+        .metrics = {0}};
+
+    if (init.status != RSMI_STATUS_SUCCESS)
+        return res;
+
+    rsmi_gpu_metrics_t pgpu_metrics;
+
+    rsmi_status_t ret = rsmi_dev_gpu_metrics_info_get(dv_ind, &pgpu_metrics);
+
+    res.metrics = pgpu_metrics;
+
     return res;
 }
