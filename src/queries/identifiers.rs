@@ -22,36 +22,22 @@ impl Identifiers {
     }
 
     pub(crate) unsafe fn get_identifiers(dv_ind: u32) -> Result<Self, RocmErr> {
-        let id = device_id(dv_ind).check()?.data;
-        let name = device_name(dv_ind).check()?.into_string()?;
-        let vendor_id = device_vendor_id(dv_ind).check()?.data;
-        let brand = device_brand(dv_ind).check()?.into_string()?;
-        let vendor_name = device_vendor_name(dv_ind).check()?.into_string()?;
-        let vram_vendor_name = device_vram_vendor_name(dv_ind).check()?.into_string()?;
-        let serial_number = device_serial(dv_ind).check()?.into_string()?;
-        let subsystem_id = device_subsystem_id(dv_ind).check()?.data;
-        let subsystem_name = device_subsystem_name(dv_ind).check()?.into_string()?;
-        let drm_render_minor = device_drm_render(dv_ind).check()?.data;
-        let subsystem_vendor_id = device_subsystem_vendor_id(dv_ind).check()?.data;
-        let unique_id_temp = device_unique_id(dv_ind).check();
-        let unique_id = match unique_id_temp {
-            Ok(res) => Ok(res.data),
-            Err(err) => Err(err),
-        };
-
         Ok(Self {
-            id,
-            name,
-            vendor_id,
-            brand,
-            vendor_name,
-            vram_vendor_name,
-            serial_number,
-            subsystem_id,
-            subsystem_name,
-            drm_render_minor,
-            subsystem_vendor_id,
-            unique_id,
+            id: device_id(dv_ind).check()?.data,
+            name: device_name(dv_ind).check()?.into_string()?,
+            vendor_id: device_vendor_id(dv_ind).check()?.data,
+            brand: device_brand(dv_ind).check()?.into_string()?,
+            vendor_name: device_vendor_name(dv_ind).check()?.into_string()?,
+            vram_vendor_name: device_vram_vendor_name(dv_ind).check()?.into_string()?,
+            serial_number: device_serial(dv_ind).check()?.into_string()?,
+            subsystem_id: device_subsystem_id(dv_ind).check()?.data,
+            subsystem_name: device_subsystem_name(dv_ind).check()?.into_string()?,
+            drm_render_minor: device_drm_render(dv_ind).check()?.data,
+            subsystem_vendor_id: device_subsystem_vendor_id(dv_ind).check()?.data,
+            unique_id: match device_unique_id(dv_ind).check() {
+                Ok(res) => Ok(res.data),
+                Err(err) => Err(err),
+            },
         })
     }
 }
