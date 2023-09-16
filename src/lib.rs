@@ -7,7 +7,9 @@ use queries::{
     identifiers::Identifiers,
     memory::Memory,
     pcie::Pcie,
-    performance::{OverdriveLevels, PerformanceCounters, PerformanceLevel, Frequency, FrequencyVoltageCurv},
+    performance::{
+        Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters, PerformanceLevel,
+    },
     physical::Fans,
     power::Power,
 };
@@ -36,11 +38,17 @@ impl RocmSmi {
     }
 
     pub fn into_first_device(self) -> Result<RocmSmiDevice, RocmErr> {
-        RocmSmiDevice::new_from_rocm(self, 0)
+        if 0 >= self.get_device_count() {
+            return Err(RocmErr::RsmiStatusInputOutOfBounds);
+        }
+        Ok(RocmSmiDevice { id: 0, rocm: self })
     }
 
-    pub fn into_device(self, dv_ind: u32) -> Result<RocmSmiDevice, RocmErr> {
-        RocmSmiDevice::new_from_rocm(self, dv_ind)
+    pub fn into_device(self, id: u32) -> Result<RocmSmiDevice, RocmErr> {
+        if id >= self.get_device_count() {
+            return Err(RocmErr::RsmiStatusInputOutOfBounds);
+        }
+        Ok(RocmSmiDevice { id, rocm: self })
     }
 
     pub fn get_device_count(&self) -> u32 {
@@ -59,7 +67,7 @@ impl RocmSmi {
         unsafe { Power::get_power(dv_ind) }
     }
 
-    pub fn get_device_memory_data(&self, dv_ind: u32) -> Result<Memory<u64>, RocmErr> {
+    pub fn get_device_memory_data(&self, dv_ind: u32) -> Result<Memory, RocmErr> {
         unsafe { Memory::get_memory(dv_ind) }
     }
 
@@ -103,11 +111,18 @@ impl RocmSmi {
         unsafe { OverdriveLevels::get_overdrive_levels(dv_ind) }
     }
 
-    pub fn get_device_frequency<'a>(&self, dv_ind: u32, freq_type: RsmiClkType) -> Result<Frequency<'a>, RocmErr>{
-        unsafe { Frequency::get_freq(dv_ind, freq_type)}
+    pub fn get_device_frequency<'a>(
+        &self,
+        dv_ind: u32,
+        freq_type: RsmiClkType,
+    ) -> Result<Frequency<'a>, RocmErr> {
+        unsafe { Frequency::get_freq(dv_ind, freq_type) }
     }
 
-    pub fn get_device_frequency_voltage_curve<'a>(&self, dv_ind: u32) -> Result<FrequencyVoltageCurv<'a>, RocmErr>{
-        unsafe { FrequencyVoltageCurv::get_curve(dv_ind)}
+    pub fn get_device_frequency_voltage_curve<'a>(
+        &self,
+        dv_ind: u32,
+    ) -> Result<FrequencyVoltageCurv<'a>, RocmErr> {
+        unsafe { FrequencyVoltageCurv::get_curve(dv_ind) }
     }
 }

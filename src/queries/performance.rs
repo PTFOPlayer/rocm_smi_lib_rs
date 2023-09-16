@@ -26,71 +26,48 @@ impl PerformanceCounters {
 
 #[derive(Debug)]
 pub enum PerformanceLevel {
-    RsmiDevPerfLevelAuto,
-    RsmiDevPerfLevelLow,
-    RsmiDevPerfLevelHigh,
-    RsmiDevPerfLevelManual,
-    RsmiDevPerfLevelStableStd,
-    RsmiDevPerfLevelStablePeak,
-    RsmiDevPerfLevelStableMinMclk,
-    RsmiDevPerfLevelStableMinSclk,
-    RsmiDevPerfLevelDeterminism,
-    RsmiDevPerfLevelUnknown,
+    Auto,
+    Low,
+    High,
+    Manual,
+    StableStd,
+    StablePeak,
+    StableMinMclk,
+    StableMinSclk,
+    Determinism,
+    Unknown,
 }
 
 impl PerformanceLevel {
     pub(crate) unsafe fn get_performance_level(dv_ind: u32) -> Result<Self, RocmErr> {
-        Ok(PerformanceLevel::from_u32(perf_level(dv_ind).check()?.data))
-    }
-    pub(crate) fn from_u32(level: u32) -> Self {
-        match level {
-            0 => PerformanceLevel::RsmiDevPerfLevelAuto,
-            1 => PerformanceLevel::RsmiDevPerfLevelLow,
-            2 => PerformanceLevel::RsmiDevPerfLevelHigh,
-            3 => PerformanceLevel::RsmiDevPerfLevelManual,
-            4 => PerformanceLevel::RsmiDevPerfLevelStableStd,
-            5 => PerformanceLevel::RsmiDevPerfLevelStablePeak,
-            6 => PerformanceLevel::RsmiDevPerfLevelStableMinMclk,
-            7 => PerformanceLevel::RsmiDevPerfLevelStableMinSclk,
-            8 => PerformanceLevel::RsmiDevPerfLevelDeterminism,
-            _ => PerformanceLevel::RsmiDevPerfLevelUnknown,
-        }
+        Ok(match perf_level(dv_ind).check()?.data {
+            0 => PerformanceLevel::Auto,
+            1 => PerformanceLevel::Low,
+            2 => PerformanceLevel::High,
+            3 => PerformanceLevel::Manual,
+            4 => PerformanceLevel::StableStd,
+            5 => PerformanceLevel::StablePeak,
+            6 => PerformanceLevel::StableMinMclk,
+            7 => PerformanceLevel::StableMinSclk,
+            8 => PerformanceLevel::Determinism,
+            _ => PerformanceLevel::Unknown,
+        })
     }
 }
 
 impl ToString for PerformanceLevel {
     fn to_string(&self) -> String {
         match self {
-            PerformanceLevel::RsmiDevPerfLevelAuto => {
-                "Rsmi device performance level: Auto".to_owned()
-            }
-            PerformanceLevel::RsmiDevPerfLevelLow => {
-                "Rsmi device performance level: Low".to_owned()
-            }
-            PerformanceLevel::RsmiDevPerfLevelHigh => {
-                "Rsmi device performance level: High".to_owned()
-            }
-            PerformanceLevel::RsmiDevPerfLevelManual => {
-                "Rsmi device performance level: Manual".to_owned()
-            }
-            PerformanceLevel::RsmiDevPerfLevelStableStd => {
-                "Rsmi device performance level: Stable Std".to_owned()
-            }
-            PerformanceLevel::RsmiDevPerfLevelStablePeak => {
-                "Rsmi device performance level: Stable Peak".to_owned()
-            }
-            PerformanceLevel::RsmiDevPerfLevelStableMinMclk => {
-                "Rsmi device performance level: Stable Min Memory Clk".to_owned()
-            }
-            PerformanceLevel::RsmiDevPerfLevelStableMinSclk => {
-                "Rsmi device performance level: Stable Min Silicone Clk".to_owned()
-            }
-            PerformanceLevel::RsmiDevPerfLevelDeterminism => {
-                "Rsmi device performance level: Determinism".to_owned()
-            }
-            PerformanceLevel::RsmiDevPerfLevelUnknown => {
-                "Rsmi device performance level: Unknown".to_owned()
-            }
+            PerformanceLevel::Auto => "performance level: Auto".to_owned(),
+            PerformanceLevel::Low => "performance level: Low".to_owned(),
+            PerformanceLevel::High => "performance level: High".to_owned(),
+            PerformanceLevel::Manual => "performance level: Manual".to_owned(),
+            PerformanceLevel::StableStd => "performance level: Stable Std".to_owned(),
+            PerformanceLevel::StablePeak => "performance level: Stable Peak".to_owned(),
+            PerformanceLevel::StableMinMclk => "performance level: Stable Min MClk".to_owned(),
+            PerformanceLevel::StableMinSclk => "performance level: Stable Min SClk".to_owned(),
+            PerformanceLevel::Determinism => "performance level: Determinism".to_owned(),
+            PerformanceLevel::Unknown => "performance level: Unknown".to_owned(),
         }
     }
 }
@@ -151,7 +128,7 @@ pub struct FrequencyVoltageCurv<'a> {
 impl FrequencyVoltageCurv<'_> {
     pub(crate) unsafe fn get_curve<'a>(dv_ind: u32) -> Result<FrequencyVoltageCurv<'a>, RocmErr> {
         let data = volt_curve(dv_ind).check()?;
-        let slice = from_raw_parts(data.points, data.num_regions as usize);
+        let curve_points = from_raw_parts(data.points, data.num_regions as usize);
 
         Ok(FrequencyVoltageCurv {
             sclk_current_range: ClkRange {
@@ -170,7 +147,7 @@ impl FrequencyVoltageCurv<'_> {
                 upper_limit: data.mclk_limit_max,
                 lower_limit: data.mclk_limit_min,
             },
-            curve_points: slice,
+            curve_points,
         })
     }
 }

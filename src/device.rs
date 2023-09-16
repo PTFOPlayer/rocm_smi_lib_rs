@@ -15,19 +15,11 @@ use crate::{
 };
 
 pub struct RocmSmiDevice {
-    id: u32,
-    rocm: RocmSmi,
+    pub(crate) id: u32,
+    pub(crate) rocm: RocmSmi,
 }
 
 impl RocmSmiDevice {
-    #[inline(always)]
-    pub(crate) fn new_from_rocm(rocm: RocmSmi, id: u32) -> Result<Self, RocmErr> {
-        if id >= rocm.get_device_count() {
-            return Err(RocmErr::RsmiStatusInputOutOfBounds);
-        }
-        Ok(Self { id, rocm })
-    }
-
     pub fn new(id: u32) -> Result<Self, RocmErr> {
         let rocm = RocmSmi::init()?;
         if id >= rocm.get_device_count() {
@@ -48,7 +40,7 @@ impl RocmSmiDevice {
         self.rocm.get_device_power_data(self.id)
     }
 
-    pub fn get_memory_data(&self) -> Result<Memory<u64>, RocmErr> {
+    pub fn get_memory_data(&self) -> Result<Memory, RocmErr> {
         self.rocm.get_device_memory_data(self.id)
     }
 
