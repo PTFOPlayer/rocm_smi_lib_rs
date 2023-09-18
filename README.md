@@ -39,7 +39,7 @@ sudo zypper install rocblas rocm-smi-lib
 
 Run commands:
 ```
-echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/$ver focal main" \
+echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/5.5.3 focal main" \
     | sudo tee --append /etc/apt/sources.list.d/rocm.list
 
 echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' \
@@ -49,3 +49,9 @@ sudo apt update
 
 sudo apt install rocm-dkms rocm-dev rocm-smi-lib
 ```
+
+## Other
+For other check out [How to install ROCM](https://docs.amd.com/en/docs-5.3.0/deploy/linux/os-native/install.html)
+
+# Usage / Examples
+to be written...
