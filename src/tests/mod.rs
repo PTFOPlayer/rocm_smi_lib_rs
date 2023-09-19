@@ -3,21 +3,13 @@ mod test {
     use crate::{
         bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric, RsmiClkType},
         error::RocmErr,
-        RocmSmi,
+        RocmSmi, device::RocmSmiDevice,
     };
 
     #[test]
     fn full_test() -> Result<(), RocmErr> {
-        let res = {
-            let this = RocmSmi::init()?;
-            if 0 >= {
-                let ref this = this;
-                this.device_count
-            } {
-                return Err(RocmErr::RsmiStatusInputOutOfBounds);
-            }
-            Ok(RocmSmiDevice { id: 0, rocm: this })
-        }?;
+        let res = RocmSmi::init()?.into_first_device()?;
+
         let identifiers = res.get_identifiers()?;
         println!("identifiers: {:?}", identifiers);
         println!(
