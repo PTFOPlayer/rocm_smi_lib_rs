@@ -54,4 +54,13 @@ sudo apt install rocm-dkms rocm-dev rocm-smi-lib
 For other check out [How to install ROCM](https://docs.amd.com/en/docs-5.3.0/deploy/linux/os-native/install.html)
 
 # Usage / Examples
-to be written...
+
+Example of printing the name of your GPU:
+```rust
+fn print_gpu_name() -> Result<(), RocmErr> {
+    let rocm = RocmSmi::init()?;
+    let name = rocm.get_device_identifiers(0)?.name;
+    println!("{}", name);
+    Ok(())
+}    
+```
