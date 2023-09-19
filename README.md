@@ -24,7 +24,7 @@ gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
 Then run 
 On Fedora:
 ```
-sudo dnf install rocm-smi rocm-smi-devel
+sudo dnf install rocm-smi rocm-smi-devel rocm-smi-lib
 ```
 On RHEL:
 ```
