@@ -8,7 +8,16 @@ mod test {
 
     #[test]
     fn full_test() -> Result<(), RocmErr> {
-        let res = RocmSmi::init()?.into_first_device()?;
+        let res = {
+            let this = RocmSmi::init()?;
+            if 0 >= {
+                let ref this = this;
+                this.device_count
+            } {
+                return Err(RocmErr::RsmiStatusInputOutOfBounds);
+            }
+            Ok(RocmSmiDevice { id: 0, rocm: this })
+        }?;
         let identifiers = res.get_identifiers()?;
         println!("identifiers: {:?}", identifiers);
         println!(
@@ -29,8 +38,8 @@ mod test {
         println!(
             "memory temperature data: {:?}",
             res.get_temperature_metric(
-                RsmiTemperatureSensor::RsmiTempTypeMemory,
-                RsmiTemperatureMetric::RsmiTempCurrent
+                RsmiTemperatureSensor::RsmiTempTypeEdge,
+                RsmiTemperatureMetric::RsmiTempCurrent,
             )
         );
         println!(

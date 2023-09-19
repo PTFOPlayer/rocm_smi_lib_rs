@@ -230,34 +230,47 @@ pub(crate) struct ResultGpuMetrics {
 
 #[repr(C)]
 #[derive(Debug)]
+pub struct MeticHeader {
+    pub structure_size: u16,
+    pub format_revision: u8,
+    pub content_revision: u8,
+}
+
+#[repr(C)]
+#[derive(Debug)]
 pub struct GpuMetrics {
-    // Temperature
+    /// metric header
+    pub headers: MeticHeader,
+    /// Temperature
     pub temperature_edge: u16,
     pub temperature_hotspot: u16,
     pub temperature_mem: u16,
     pub temperature_vrgfx: u16,
     pub temperature_vrsoc: u16,
     pub temperature_vrmem: u16,
-    // Utilization
+    /// Utilization
     pub average_gfx_activity: u16,
     pub average_umc_activity: u16, // memory controller
     pub average_mm_activity: u16,  // UVD or VCN
-    // Power/Energy
+    /// Power/Energy
     pub average_socket_power: u16,
     pub energy_accumulator: u64,
-    // Driver attached timestamp (in ns)
+    /// Driver attached timestamp (in ns)
     pub system_clock_counter: u64,
-    // Average clocks
+    /// Average clocks
     pub average_gfxclk_frequency: u16,
+    /// needs filter
     pub average_socclk_frequency: u16,
     pub average_uclk_frequency: u16,
     pub average_vclk0_frequency: u16,
     pub average_dclk0_frequency: u16,
     pub average_vclk1_frequency: u16,
     pub average_dclk1_frequency: u16,
-    // Current clocks
+    /// Current clocks
     pub current_gfxclk: u16,
+    /// needs filter
     pub current_socclk: u16,
+    /// needs filter
     pub current_uclk: u16,
     pub current_vclk0: u16,
     pub current_dclk0: u16,
@@ -271,10 +284,13 @@ pub struct GpuMetrics {
     pub pcie_link_width: u16,
     pub pcie_link_speed: u16,
 
+    /// not sure what it is for
+    /// needs filter
     pub padding: u16,
 
     pub gfx_activity_acc: u32,
     pub mem_actvity_acc: u32,
+    /// needs filter
     pub temperature_hbm: [u16; 4],
 }
 
