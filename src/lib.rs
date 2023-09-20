@@ -18,7 +18,7 @@ mod tests;
 
 pub mod queries;
 
-mod device;
+pub mod device;
 use device::*;
 
 #[derive(Debug)]
