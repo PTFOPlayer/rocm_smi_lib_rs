@@ -7,11 +7,6 @@
 #include "../structs.h"
 #endif
 
-#ifndef INIT_H
-#define INIT_H
-#include "./init.h"
-#endif
-
 typedef struct result_power {
   uint16_t status;
   uint16_t sensors;
@@ -33,11 +28,6 @@ result_power power_data(uint32_t dv_ind)
       .power_cap_min_sensor = NULL,
       .power_cap_max_sensor = NULL
   };
-  if (init.status != RSMI_STATUS_SUCCESS)
-  {
-    result_power error = {init.status};
-    return error;
-  }
 
   uint64_t *pwr_ave = (uint64_t *)malloc(sizeof(uint64_t));
   uint64_t *pwr_cap = (uint64_t *)malloc(sizeof(uint64_t));

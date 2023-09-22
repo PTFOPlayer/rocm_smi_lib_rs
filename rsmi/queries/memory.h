@@ -7,21 +7,12 @@
 #include "../structs.h"
 #endif
 
-#ifndef INIT_H
-#define INIT_H
-#include "./init.h"
-#endif
-
 #define VRAM RSMI_MEM_TYPE_VRAM 
 #define VIS_VRAM RSMI_MEM_TYPE_VIS_VRAM
 #define GTT RSMI_MEM_TYPE_GTT
 
 result_uint64_t mem_total(uint32_t dv_ind, rsmi_memory_type_t mem_type) {
-  if (init.status != RSMI_STATUS_SUCCESS)
-  {
-    result_uint64_t error = {init.status, 0};
-    return error;
-  }
+
 
   uint64_t ammount;
   rsmi_status_t ret = rsmi_dev_memory_total_get(dv_ind, mem_type, &ammount);
@@ -31,12 +22,6 @@ result_uint64_t mem_total(uint32_t dv_ind, rsmi_memory_type_t mem_type) {
 }
 
 result_uint64_t mem_used(uint32_t dv_ind, rsmi_memory_type_t mem_type) {
-  if (init.status != RSMI_STATUS_SUCCESS)
-  {
-    result_uint64_t error = {init.status, 0};
-    return error;
-  }
-
   uint64_t ammount;
   rsmi_status_t ret = rsmi_dev_memory_usage_get(dv_ind, mem_type, &ammount);
 
@@ -69,12 +54,6 @@ result_uint64_t mem_used_gtt(uint32_t dv_ind) {
 }
 
 result_uint32_t memory_busy_percent(uint32_t dv_ind) {
-    if (init.status != RSMI_STATUS_SUCCESS)
-  {
-    result_uint32_t error = {init.status, 0};
-    return error;
-  }
-
   uint32_t percent;
   rsmi_status_t ret = rsmi_dev_memory_busy_percent_get(dv_ind, &percent);
 

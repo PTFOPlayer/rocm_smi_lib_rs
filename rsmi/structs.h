@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <rocm_smi/rocm_smi.h>
 
+#define NameSize 64
+
 typedef struct init_status
 {
   uint16_t status;
