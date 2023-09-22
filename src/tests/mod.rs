@@ -3,7 +3,7 @@ mod test {
     use crate::{
         bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric, RsmiClkType},
         error::RocmErr,
-        RocmSmi, device::RocmSmiDevice,
+        RocmSmi
     };
 
     #[test]

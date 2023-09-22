@@ -27,9 +27,8 @@ uint16_t shutdown_c()
   {
     init.status = rsmi_shut_down();
     init.initiated = 0;
-    if(init.status == 0) {
+    if (init.status == 0)
       init.status = RSMI_STATUS_INIT_ERROR;
-    }
   }
   return init.status;
 }
