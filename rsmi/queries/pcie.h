@@ -7,11 +7,6 @@
 #include "../structs.h"
 #endif
 
-#ifndef INIT_H
-#define INIT_H
-#include "./init.h"
-#endif
-
 typedef struct result_pcie_bandwidth
 {
   uint16_t status;
@@ -31,12 +26,6 @@ typedef struct result_pcie_throughput
 
 result_pcie_bandwidth pci_bandwidth(uint32_t dv_ind)
 {
-  if (init.status != RSMI_STATUS_SUCCESS)
-  {
-    result_pcie_bandwidth error = {init.status, 0};
-    return error;
-  }
-
   rsmi_pcie_bandwidth_t bandwidth;
 
   rsmi_status_t ret = rsmi_dev_pci_bandwidth_get(dv_ind, &bandwidth);
@@ -62,12 +51,6 @@ result_pcie_bandwidth pci_bandwidth(uint32_t dv_ind)
 }
 
 result_uint64_t pcie_id(uint32_t dv_ind) {
-  if (init.status != RSMI_STATUS_SUCCESS)
-  {
-    result_uint64_t error = {init.status, 0};
-    return error;
-  }
-
   uint64_t id;
   rsmi_status_t ret = rsmi_dev_pci_id_get(dv_ind, &id);
 
@@ -76,12 +59,6 @@ result_uint64_t pcie_id(uint32_t dv_ind) {
 }
 
 result_uint32_t topo_numa_affinity(uint32_t dv_ind) {
-  if (init.status != RSMI_STATUS_SUCCESS)
-  {
-    result_uint32_t error = {init.status, 0};
-    return error;
-  }
-
   uint32_t id;
   rsmi_status_t ret = rsmi_topo_numa_affinity_get(dv_ind, &id);
 
@@ -90,12 +67,6 @@ result_uint32_t topo_numa_affinity(uint32_t dv_ind) {
 }
 
 result_pcie_throughput pci_throughput(uint32_t dv_ind) {
-  if (init.status != RSMI_STATUS_SUCCESS)
-  {
-    result_pcie_throughput error = {init.status, 0, 0, 0};
-    return error;
-  }
-
   uint64_t sent;
   uint64_t received;
   uint64_t max_pkg_size;

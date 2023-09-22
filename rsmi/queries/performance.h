@@ -7,19 +7,8 @@
 #include "../structs.h"
 #endif
 
-#ifndef INIT_H
-#define INIT_H
-#include "./init.h"
-#endif
-
 result_uint32_t busy_percent(uint32_t dv_ind)
 {
-    if (init.status != RSMI_STATUS_SUCCESS)
-    {
-        result_uint32_t error = {init.status, 0};
-        return error;
-    }
-
     uint32_t percent;
     rsmi_status_t ret = rsmi_dev_busy_percent_get(dv_ind, &percent);
 
@@ -36,11 +25,6 @@ typedef struct result_util_counter
 
 result_util_counter util_counters(uint32_t dv_ind)
 {
-    if (init.status != RSMI_STATUS_SUCCESS)
-    {
-        result_util_counter error = {init.status, 0, 0};
-        return error;
-    }
     uint32_t count = 2;
     uint64_t timestamp;
     rsmi_utilization_counter_t *counters = (rsmi_utilization_counter_t *)malloc(sizeof(rsmi_utilization_counter_t) * count);
@@ -55,12 +39,6 @@ result_util_counter util_counters(uint32_t dv_ind)
 
 result_uint32_t perf_level(uint32_t dv_ind)
 {
-    if (init.status != RSMI_STATUS_SUCCESS)
-    {
-        result_uint32_t error = {init.status, 0};
-        return error;
-    }
-
     rsmi_dev_perf_level_t level;
     rsmi_status_t ret = rsmi_dev_perf_level_get(dv_ind, &level);
 
@@ -77,14 +55,11 @@ typedef struct result_overdrive_levels
 
 result_overdrive_levels overdrive_levels(uint32_t dv_ind)
 {
-    rsmi_status_t ret = init.status;
-    result_overdrive_levels res = {ret, 0, 0};
-    if (ret != RSMI_STATUS_SUCCESS)
-        return res;
+    result_overdrive_levels res = {0, 0, 0};
 
     uint32_t graphics, memory;
 
-    ret = rsmi_dev_overdrive_level_get(dv_ind, &graphics);
+    rsmi_status_t ret = rsmi_dev_overdrive_level_get(dv_ind, &graphics);
     if (ret != RSMI_STATUS_SUCCESS)
         return res;
 
@@ -108,12 +83,6 @@ typedef struct result_frequencies
 
 result_frequencies frequency(uint32_t dv_ind, uint32_t clk_type)
 {
-    if (init.status != RSMI_STATUS_SUCCESS)
-    {
-        result_frequencies error = {init.status, 0, 0, NULL};
-        return error;
-    }
-
     rsmi_frequencies_t freq = {0, 0, {0}};
     rsmi_status_t ret = rsmi_dev_gpu_clk_freq_get(dv_ind, clk_type, &freq);
 
@@ -143,23 +112,6 @@ typedef struct result_volt_curve
 
 result_volt_curve volt_curve(uint32_t dv_ind)
 {
-    if (init.status != RSMI_STATUS_SUCCESS)
-    {
-        result_volt_curve error = {
-            .status = init.status,
-            .num_regions = 0,
-            .curr_sclk_range_min = 0,
-            .curr_sclk_range_max = 0,
-            .sclk_limit_min = 0,
-            .sclk_limit_max = 0,
-            .curr_mclk_range_min = 0,
-            .curr_mclk_range_max = 0,
-            .mclk_limit_min = 0,
-            .mclk_limit_max = 0,
-            .points = NULL};
-        return error;
-    }
-
     rsmi_od_volt_freq_data_t volt_c;
     rsmi_status_t ret = rsmi_dev_od_volt_info_get(dv_ind, &volt_c);
 

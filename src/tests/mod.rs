@@ -9,7 +9,7 @@ mod test {
     #[test]
     fn full_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
-
+        
         let identifiers = res.get_identifiers()?;
         println!("identifiers: {:?}", identifiers);
         println!(
@@ -45,6 +45,7 @@ mod test {
         println!("freq core {:?}", res.get_frequency(RsmiClkType::RsmiClkTypeDf));
         println!("f-v curve: {:?}", res.get_frequency_voltage_curve());
         println!("metrics: {:?}", res.get_full_metrics());
+
         Ok(())
     }
 }

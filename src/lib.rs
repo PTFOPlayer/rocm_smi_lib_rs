@@ -1,4 +1,6 @@
 mod bindings;
+use std::cell::RefCell;
+
 use bindings::*;
 
 pub mod error;
@@ -8,7 +10,8 @@ use queries::{
     memory::Memory,
     pcie::Pcie,
     performance::{
-        Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters, PerformanceLevel, get_metrics,
+        get_metrics, Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters,
+        PerformanceLevel,
     },
     physical::Fans,
     power::Power,
@@ -27,6 +30,23 @@ pub struct RocmSmi {
     device_count: u32,
 }
 
+#[derive(Debug)]
+struct RcStatus {
+    count: u32,
+    status: RocmErr,
+}
+
+#[derive(Debug)]
+pub struct DeleteStatus {
+    pub remaining_instances: u32,
+    pub deletion_status: RocmErr,
+}
+
+thread_local!( static INIT_STATUS2: RefCell<RcStatus> = RefCell::new(RcStatus {
+    count: 0,
+    status: RocmErr::RsmiStatusInitError,
+}));
+
 impl RocmSmi {
     /// # Functionality
     ///
@@ -36,15 +56,43 @@ impl RocmSmi {
     ///
     /// This function will return an error if it's impossible to initiate Rocm.
     pub fn init() -> Result<Self, RocmErr> {
-        let code = unsafe { init_c() };
-        if code == 0 {
+        let status = INIT_STATUS2.with(|data| data.borrow().status);
+        let count = INIT_STATUS2.with(|data| data.borrow().count);
+
+        if status == RocmErr::RsmiStatusSuccess {
+            INIT_STATUS2.with(|data| {
+                RefCell::replace(
+                    &data,
+                    RcStatus {
+                        count: count + 1,
+                        status: RocmErr::RsmiStatusSuccess,
+                    },
+                )
+            });
+
             return Ok(RocmSmi {
                 device_count: unsafe { num_devices().check()? }.data,
             });
         }
-        return Err(RocmErr::from_u16(code));
-    }
+        let code = unsafe { rsmi_init(0) };
 
+        if code != RocmErr::RsmiStatusSuccess {
+            return Err(code);
+        }
+
+        INIT_STATUS2.with(|data| {
+            RefCell::replace(
+                &data,
+                RcStatus {
+                    count: 1,
+                    status: code,
+                },
+            );
+        });
+        return Ok(RocmSmi {
+            device_count: unsafe { num_devices().check()? }.data,
+        });
+    }
     /// # Functionality
     /// This function converts general Rocm object into object for device with index = 0.
     pub fn into_first_device(self) -> Result<RocmSmiDevice, RocmErr> {
@@ -188,5 +236,35 @@ impl RocmSmi {
 
     pub fn get_device_full_metrics(&self, dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
         unsafe { get_metrics(dv_ind) }
+    }
+}
+
+impl Drop for RocmSmi {
+    fn drop(&mut self) {
+        let count = INIT_STATUS2.with(|data| data.borrow().count);
+        if count > 1 {
+            INIT_STATUS2.with(|data| {
+                RefCell::replace(
+                    &data,
+                    RcStatus {
+                        count: count - 1,
+                        status: RocmErr::RsmiStatusSuccess,
+                    },
+                );
+            });
+        } else {
+            INIT_STATUS2.with(|data| {
+                RefCell::replace(
+                    &data,
+                    RcStatus {
+                        count: 0,
+                        status: RocmErr::RsmiStatusInitError,
+                    },
+                );
+            });
+            unsafe {
+                rsmi_shut_down();
+            }
+        }
     }
 }

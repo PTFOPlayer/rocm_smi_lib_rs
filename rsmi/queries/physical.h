@@ -7,11 +7,6 @@
 #include "../structs.h"
 #endif
 
-#ifndef INIT_H
-#define INIT_H
-#include "./init.h"
-#endif
-
 typedef struct result_fans {
   uint16_t status;
   uint16_t sensors;
@@ -23,12 +18,6 @@ typedef struct result_fans {
 result_fans fans(uint32_t dv_ind)
 {
     result_fans res = {0, 0, NULL, NULL, NULL};
-    if (init.status != RSMI_STATUS_SUCCESS)
-    {
-        res.status = init.status;
-        return res;
-    }
-
     int64_t *fan_rpm = (int64_t *)malloc(sizeof(int64_t));
     int64_t *fan_speed = (int64_t *)malloc(sizeof(int64_t));
     uint64_t *fan_cap = (uint64_t *)malloc(sizeof(uint64_t));
@@ -82,12 +71,6 @@ result_fans fans(uint32_t dv_ind)
 
 result_int64_t temperature(uint32_t dv_ind, uint32_t sensor, rsmi_temperature_metric_t metric)
 {
-    if (init.status != RSMI_STATUS_SUCCESS)
-    {
-        result_int64_t error = {init.status, 0};
-        return error;
-    }
-
     int64_t temp;
     rsmi_status_t ret = rsmi_dev_temp_metric_get(dv_ind, sensor, metric, &temp);
 
@@ -97,11 +80,6 @@ result_int64_t temperature(uint32_t dv_ind, uint32_t sensor, rsmi_temperature_me
 
 result_int64_t voltage(uint32_t dv_ind, rsmi_voltage_metric_t metric)
 {
-    if (init.status != RSMI_STATUS_SUCCESS)
-    {
-        result_int64_t error = {init.status, 0};
-        return error;
-    }
     int64_t voltage;
     rsmi_status_t ret = rsmi_dev_volt_metric_get(dv_ind, RSMI_VOLT_TYPE_VDDGFX, metric, &voltage);
 

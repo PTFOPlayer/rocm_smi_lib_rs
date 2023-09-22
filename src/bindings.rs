@@ -5,7 +5,8 @@ use crate::error::RocmErr;
 #[link(name = "rsmi64", kind = "static")]
 extern "C" {
     // identifiers
-    pub(crate) fn init_c() -> u16;
+    pub(crate) fn rsmi_init(init_status: u32) -> RocmErr; 
+    pub(crate) fn rsmi_shut_down() -> RocmErr;
     pub(crate) fn num_devices() -> ResultUint32T;
     pub(crate) fn device_id(dv_ind: u32) -> ResultUint16T;
     pub(crate) fn device_name(dv_ind: u32) -> ResultStr;
