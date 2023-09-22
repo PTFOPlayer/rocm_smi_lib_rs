@@ -8,7 +8,7 @@ use queries::{
     memory::Memory,
     pcie::Pcie,
     performance::{
-        Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters, PerformanceLevel,
+        Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters, PerformanceLevel, get_metrics,
     },
     physical::Fans,
     power::Power,
@@ -187,6 +187,6 @@ impl RocmSmi {
     }
 
     pub fn get_device_full_metrics(&self, dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
-        unsafe { Ok(metrics(dv_ind).check()?.metrics) }
+        unsafe { get_metrics(dv_ind) }
     }
 }

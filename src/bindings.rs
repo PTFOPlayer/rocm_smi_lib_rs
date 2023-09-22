@@ -54,7 +54,7 @@ extern "C" {
     pub(crate) fn overdrive_levels(dv_ind: u32) -> ResultOverdriveLevels;
     pub(crate) fn frequency(dv_ind: u32, clk_type: RsmiClkType) -> ResultFrequencies;
     pub(crate) fn volt_curve(dv_ind: u32) -> ResultVoltCurve;
-    pub(crate) fn metrics(dv_ind: u32) -> ResultGpuMetrics;
+    pub(crate) fn rsmi_dev_gpu_metrics_info_get(dv_ind: u32, metrics: *mut GpuMetrics) -> RocmErr;
 }
 
 #[repr(C)]
@@ -222,14 +222,7 @@ pub(crate) struct ResultVoltCurve {
 }
 
 #[repr(C)]
-#[derive(Debug)]
-pub(crate) struct ResultGpuMetrics {
-    pub(crate) status: u16,
-    pub(crate) metrics: GpuMetrics,
-}
-
-#[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MeticHeader {
     pub structure_size: u16,
     pub format_revision: u8,
@@ -237,7 +230,7 @@ pub struct MeticHeader {
 }
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct GpuMetrics {
     /// metric header
     pub headers: MeticHeader,
@@ -326,8 +319,7 @@ auto_impl!(
     ResultUtilCounter,
     ResultOverdriveLevels,
     ResultFrequencies,
-    ResultVoltCurve,
-    ResultGpuMetrics
+    ResultVoltCurve
 );
 
 impl ResultStr {

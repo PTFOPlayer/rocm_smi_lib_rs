@@ -182,27 +182,3 @@ result_volt_curve volt_curve(uint32_t dv_ind)
         .points = points};
     return res;
 }
-
-typedef struct result_gpu_metrics
-{
-    uint16_t status;
-    rsmi_gpu_metrics_t metrics;
-} result_gpu_metrics;
-
-result_gpu_metrics metrics(uint32_t dv_ind)
-{
-    result_gpu_metrics res = {
-        .status = init.status,
-        .metrics = {0}};
-
-    if (init.status != RSMI_STATUS_SUCCESS)
-        return res;
-
-    rsmi_gpu_metrics_t pgpu_metrics;
-
-    rsmi_status_t ret = rsmi_dev_gpu_metrics_info_get(dv_ind, &pgpu_metrics);
-
-    res.metrics = pgpu_metrics;
-
-    return res;
-}

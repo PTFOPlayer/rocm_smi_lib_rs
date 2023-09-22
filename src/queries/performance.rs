@@ -3,7 +3,7 @@ use std::slice::from_raw_parts;
 use crate::{
     bindings::{
         frequency, overdrive_levels, perf_level, util_counters, volt_curve, Check, CurvePoint,
-        RsmiClkType,
+        RsmiClkType, rsmi_dev_gpu_metrics_info_get, GpuMetrics,
     },
     error::RocmErr,
 };
@@ -149,5 +149,14 @@ impl FrequencyVoltageCurv<'_> {
             },
             curve_points,
         })
+    }
+}
+
+pub(crate) unsafe fn get_metrics(dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
+    let mut metrics: GpuMetrics = GpuMetrics::default();
+    let res = rsmi_dev_gpu_metrics_info_get(dv_ind, &mut metrics as *mut GpuMetrics);
+    match (res, metrics) {
+        (RocmErr::RsmiStatusSuccess, res) => Ok(res),
+        (err,_) => Err(err) 
     }
 }
