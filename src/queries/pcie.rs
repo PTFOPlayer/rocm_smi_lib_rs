@@ -30,23 +30,36 @@ impl Pcie {
     #[inline(always)]
     pub(crate) fn get_pcie(dv_ind: u32) -> Result<Self, RocmErr> {
         unsafe {
-            let mut bandwidth = RsmiPcieBandwidthT::default();
-            rsmi_dev_pci_bandwidth_get(dv_ind, &mut bandwidth as *mut RsmiPcieBandwidthT)
-                .try_err()?;
-            let id = pcie_id(dv_ind).check()?;
-            let numa = topo_numa_affinity(dv_ind).check()?;
-            let throughput = pci_throughput(dv_ind).check()?;
+            let bandwidth = &mut RsmiPcieBandwidthT::default();
+            rsmi_dev_pci_bandwidth_get(dv_ind, bandwidth as *mut RsmiPcieBandwidthT).try_err()?;
+
+            let mut id = 0u64;
+            rsmi_dev_pci_id_get(dv_ind, &mut id as *mut u64).try_err()?;
+
+            let mut numa = 0u32;
+            rsmi_topo_numa_affinity_get(dv_ind, &mut numa as *mut u32);
+
+            let mut pkg_sent = 0u64;
+            let mut pkg_recived = 0u64;
+            let mut max_pkg_size = 0u64;
+            rsmi_dev_pci_throughput_get(
+                dv_ind,
+                &mut pkg_sent as *mut u64,
+                &mut pkg_recived as *mut u64,
+                &mut max_pkg_size as *mut u64,
+            )
+            .try_err()?;
 
             let len = bandwidth.transfer_rate.num_supported as usize;
             Ok(Pcie {
-                id: id.data,
-                associated_numa_node: numa.data,
+                id,
+                associated_numa_node: numa,
                 current_index: bandwidth.transfer_rate.current,
                 lanes: bandwidth.lanes[0..len].to_vec(),
                 frequency: bandwidth.transfer_rate.frequency[0..len].to_vec(),
-                pkg_sent: throughput.sent,
-                pkg_recived: throughput.recived,
-                max_pkg_size: throughput.max_pkg_size,
+                pkg_sent,
+                pkg_recived,
+                max_pkg_size,
             })
         }
     }
