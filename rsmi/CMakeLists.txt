@@ -2,7 +2,6 @@
 cmake_minimum_required(VERSION 2.8.0)
 
 # Required Defines first:
-set(ROCM_DIR /opt/rocm)
 set(BUILD_TYPE "Release")
 set(RSMI_INC_DIR ${ROCM_DIR}/include)
 set(RSMI_LIB_DIR ${ROCM_DIR}/lib)
