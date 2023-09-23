@@ -3,7 +3,14 @@ Crate bringing support for rocm-smi liblary from C
 
 # Instalation
 
-To use this crate you have to install rocm-smi liblaries
+```
+cargo add rocm_smi_lib
+```
+
+You can ommit instalation of rosm-smi by using `vendored` feature.
+
+
+## To use this crate you have to install rocm-smi liblaries
 
 ## Manjaro
 ```
@@ -23,6 +30,7 @@ gpgcheck=1
 gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
 ```
 > For suse change file path to /etc/zypp/repos.d/rocm.repo `baseurl` to `https://repo.radeon.com/rocm/zyp/5.5.3/main` 
+
 Then run 
 On Fedora:
 ```
