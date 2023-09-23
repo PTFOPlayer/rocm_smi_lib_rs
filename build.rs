@@ -25,7 +25,8 @@ fn main() {
     if cfg!(feature = "vendored") {
         if !Path::new("rocm_smi_lib/src").exists() {
             let _ = Command::new("git")
-                .args(&["submodule", "update", "--init", "rocm_smi_lib"])
+                // .args(&["submodule", "update", "--init", "rocm_smi_lib"])
+                .args(&["clone", "https://github.com/RadeonOpenCompute/rocm_smi_lib"])
                 .status();
         }
 
