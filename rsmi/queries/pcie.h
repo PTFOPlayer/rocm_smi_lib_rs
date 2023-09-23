@@ -7,48 +7,6 @@
 #include "../structs.h"
 #endif
 
-typedef struct result_pcie_bandwidth
-{
-  uint16_t status;
-  uint32_t current_index;
-  uint32_t num_supported;
-  uint32_t *lines;
-  uint64_t *frequencies;
-} result_pcie_bandwidth;
-
-typedef struct result_pcie_throughput
-{
-  uint16_t status;
-  uint64_t sent;
-  uint64_t recived;
-  uint64_t max_pkg_size;
-} result_pcie_throughput;
-
-result_pcie_bandwidth pci_bandwidth(uint32_t dv_ind)
-{
-  rsmi_pcie_bandwidth_t bandwidth;
-
-  rsmi_status_t ret = rsmi_dev_pci_bandwidth_get(dv_ind, &bandwidth);
-
-  uint32_t supported = bandwidth.transfer_rate.num_supported;
-  uint32_t current_indx = bandwidth.transfer_rate.current;
-
-  uint32_t *lines = (uint32_t*)malloc(sizeof(uint32_t) * supported);
-  uint64_t *frequencies = (uint64_t*)malloc(sizeof(uint64_t) * supported);
-
-  for (size_t i = 0; i < supported; i++)
-  {
-    lines[i] = bandwidth.lanes[i];
-  }
-  
-  for (size_t i = 0; i < supported; i++)
-  {
-    frequencies[i] = bandwidth.transfer_rate.frequency[i];
-  }
-  
-  result_pcie_bandwidth res = {ret, current_indx, supported, lines, frequencies};
-  return res;
-}
 
 result_uint64_t pcie_id(uint32_t dv_ind) {
   uint64_t id;
@@ -65,6 +23,14 @@ result_uint32_t topo_numa_affinity(uint32_t dv_ind) {
   result_uint32_t res = {ret, id};
   return res;
 }
+
+typedef struct result_pcie_throughput
+{
+  uint16_t status;
+  uint64_t sent;
+  uint64_t recived;
+  uint64_t max_pkg_size;
+} result_pcie_throughput;
 
 result_pcie_throughput pci_throughput(uint32_t dv_ind) {
   uint64_t sent;

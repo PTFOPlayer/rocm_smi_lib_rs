@@ -1,26 +1,60 @@
 use crate::error::RocmErr;
 
+// Guaranteed maximum possible number of supported frequencies
+const RSMI_MAX_NUM_FREQUENCIES: usize = 32;
+
+// Maximum possible value for fan speed. Should be used as the denominator
+// when determining fan speed percentage.
+const RSMI_MAX_FAN_SPEED: usize = 255;
+
+// The number of points that make up a voltage-frequency curve definition
+const RSMI_NUM_VOLTAGE_CURVE_POINTS: usize = 3;
+
 #[link(name = "rsmi64", kind = "static")]
 extern "C" {
     // identifiers
-    pub(crate) fn rsmi_init(init_status: u32) -> RocmErr; 
+    pub(crate) fn rsmi_init(init_status: u32) -> RocmErr;
     pub(crate) fn rsmi_shut_down() -> RocmErr;
     pub(crate) fn rsmi_num_monitor_devices(num_devices: *mut u32) -> RocmErr;
-    pub(crate) fn rsmi_dev_id_get(dv_ind:u32, id: *mut u16) -> RocmErr;
-    pub(crate) fn rsmi_dev_name_get(dv_ind:u32, name: *mut i8, name_length: usize)-> RocmErr;
-    pub(crate) fn rsmi_dev_vendor_id_get(dv_ind:u32, id: *mut u16) -> RocmErr;
-    pub(crate) fn rsmi_dev_brand_get(dv_ind:u32, brand: *mut i8, name_length: usize)-> RocmErr;
-    pub(crate) fn rsmi_dev_vendor_name_get(dv_ind:u32, vendor: *mut i8, name_length: usize)-> RocmErr;
-    pub(crate) fn rsmi_dev_vram_vendor_get(dv_ind:u32, vendor: *mut i8, name_length: usize)-> RocmErr;
-    pub(crate) fn rsmi_dev_serial_number_get(dv_ind:u32, serial_number: *mut i8, name_length: usize)-> RocmErr;
-    pub(crate) fn rsmi_dev_subsystem_id_get(dv_ind:u32, id: *mut u16) -> RocmErr;
-    pub(crate) fn rsmi_dev_subsystem_name_get(dv_ind:u32, subsystem_name: *mut i8, name_length: usize)-> RocmErr;
-    pub(crate) fn rsmi_dev_drm_render_minor_get(dv_ind:u32, render_minor: *mut u32) -> RocmErr;
-    pub(crate) fn rsmi_dev_subsystem_vendor_id_get(dv_ind:u32, subsystem_vendor_id: *mut u16) -> RocmErr;
+    pub(crate) fn rsmi_dev_id_get(dv_ind: u32, id: *mut u16) -> RocmErr;
+    pub(crate) fn rsmi_dev_name_get(dv_ind: u32, name: *mut i8, name_length: usize) -> RocmErr;
+    pub(crate) fn rsmi_dev_vendor_id_get(dv_ind: u32, id: *mut u16) -> RocmErr;
+    pub(crate) fn rsmi_dev_brand_get(dv_ind: u32, brand: *mut i8, name_length: usize) -> RocmErr;
+    pub(crate) fn rsmi_dev_vendor_name_get(
+        dv_ind: u32,
+        vendor: *mut i8,
+        name_length: usize,
+    ) -> RocmErr;
+    pub(crate) fn rsmi_dev_vram_vendor_get(
+        dv_ind: u32,
+        vendor: *mut i8,
+        name_length: usize,
+    ) -> RocmErr;
+    pub(crate) fn rsmi_dev_serial_number_get(
+        dv_ind: u32,
+        serial_number: *mut i8,
+        name_length: usize,
+    ) -> RocmErr;
+    pub(crate) fn rsmi_dev_subsystem_id_get(dv_ind: u32, id: *mut u16) -> RocmErr;
+    pub(crate) fn rsmi_dev_subsystem_name_get(
+        dv_ind: u32,
+        subsystem_name: *mut i8,
+        name_length: usize,
+    ) -> RocmErr;
+    pub(crate) fn rsmi_dev_drm_render_minor_get(dv_ind: u32, render_minor: *mut u32) -> RocmErr;
+    pub(crate) fn rsmi_dev_subsystem_vendor_id_get(
+        dv_ind: u32,
+        subsystem_vendor_id: *mut u16,
+    ) -> RocmErr;
     pub(crate) fn rsmi_dev_unique_id_get(dv_ind: u32, unique_id: *mut u64) -> RocmErr;
 
     // pcie
-    pub(crate) fn pci_bandwidth(dv_ind: u32) -> ResultPcieBandwidth;
+
+    pub(crate) fn rsmi_dev_pci_bandwidth_get(
+        dv_ind: u32,
+        bandwidth: *mut RsmiPcieBandwidthT,
+    ) -> RocmErr;
+
     pub(crate) fn pcie_id(dv_ind: u32) -> ResultUint64T;
     pub(crate) fn topo_numa_affinity(dv_ind: u32) -> ResultUint32T;
     pub(crate) fn pci_throughput(dv_ind: u32) -> ResultPcieThroughput;
@@ -57,6 +91,7 @@ extern "C" {
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub enum RsmiTemperatureMetric {
     RsmiTempCurrent,
     RsmiTempMax,
@@ -75,6 +110,7 @@ pub enum RsmiTemperatureMetric {
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub enum RsmiTemperatureSensor {
     RsmiTempTypeEdge,
     RsmiTempTypeJunction,
@@ -87,6 +123,7 @@ pub enum RsmiTemperatureSensor {
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub enum RsmiVoltageMetric {
     RsmiVoltCurrent,
     RsmiVoltMax,
@@ -128,26 +165,26 @@ pub(crate) struct ResultUint32T {
 }
 
 #[repr(C)]
-pub(crate) struct ResultUint16T {
-    pub(crate) status: u16,
-    pub(crate) data: u16,
-}
-
-#[repr(C)]
-pub(crate) struct ResultPcieBandwidth {
-    pub(crate) status: u16,
-    pub(crate) current: u32,
-    pub(crate) num_supported: u32,
-    pub(crate) lines: *const u32,
-    pub(crate) frequencies: *const u64,
-}
-
-#[repr(C)]
 pub(crate) struct ResultPcieThroughput {
     pub(crate) status: u16,
     pub(crate) sent: u64,
     pub(crate) recived: u64,
     pub(crate) max_pkg_size: u64,
+}
+
+#[repr(C)]
+#[derive(Default)]
+pub(crate) struct RsmiFrequenciesT {
+    pub(crate) num_supported: u32,
+    pub(crate) current: u32,
+    pub(crate) frequency: [u64; RSMI_MAX_NUM_FREQUENCIES],
+}
+
+#[repr(C)]
+#[derive(Default)]
+pub(crate) struct RsmiPcieBandwidthT {
+    pub(crate) transfer_rate: RsmiFrequenciesT,
+    pub(crate) lanes: [u32; RSMI_MAX_NUM_FREQUENCIES],
 }
 
 #[repr(C)]
@@ -193,7 +230,7 @@ pub(crate) struct ResultFrequencies {
 }
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CurvePoint {
     frequency: u64,
     voltage: u64,
@@ -215,7 +252,7 @@ pub(crate) struct ResultVoltCurve {
 }
 
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct MeticHeader {
     pub structure_size: u16,
     pub format_revision: u8,
@@ -223,7 +260,7 @@ pub struct MeticHeader {
 }
 
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct GpuMetrics {
     /// metric header
     pub headers: MeticHeader,
@@ -300,11 +337,9 @@ macro_rules! auto_impl {
 }
 
 auto_impl!(
-    ResultUint16T,
     ResultUint32T,
     ResultUint64T,
     ResultInt64T,
-    ResultPcieBandwidth,
     ResultPcieThroughput,
     ResultPower,
     ResultFans,
@@ -315,7 +350,11 @@ auto_impl!(
 );
 
 #[inline(always)]
-pub(crate) unsafe fn string_from_fn(dv_ind:u32, name_size: usize, f: unsafe extern "C" fn(u32, *mut i8, usize) -> RocmErr) -> Result<String, RocmErr> {
+pub(crate) unsafe fn string_from_fn(
+    dv_ind: u32,
+    name_size: usize,
+    f: unsafe extern "C" fn(u32, *mut i8, usize) -> RocmErr,
+) -> Result<String, RocmErr> {
     let buff = libc::malloc(name_size).cast();
     f(dv_ind, buff, name_size).try_err()?;
     let temp = std::ffi::CString::from_raw(buff);

@@ -1,5 +1,7 @@
 use crate::{
-    bindings::{RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric, GpuMetrics},
+    bindings::{
+        GpuMetrics, RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric,
+    },
     error::RocmErr,
     queries::{
         identifiers::Identifiers,
@@ -32,7 +34,7 @@ impl RocmSmiDevice {
         self.rocm.get_device_identifiers(self.id)
     }
 
-    pub fn get_pcie_data<'a>(&self) -> Result<Pcie<'a>, RocmErr> {
+    pub fn get_pcie_data<'a>(&self) -> Result<Pcie, RocmErr> {
         self.rocm.get_device_pcie_data(self.id)
     }
 

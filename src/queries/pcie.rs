@@ -1,12 +1,11 @@
 use crate::{bindings::*, error::RocmErr};
-use std::slice::from_raw_parts;
 #[derive(Debug)]
-pub struct Pcie<'a> {
+pub struct Pcie {
     pub id: u64,
     pub associated_numa_node: u32,
     pub current_index: u32,
-    pub lines: &'a [u32],
-    pub frequencies: &'a [u64],
+    pub lanes: Vec<u32>,
+    pub frequency: Vec<u64>,
     pub pkg_sent: u64,
     pub pkg_recived: u64,
     pub max_pkg_size: u64,
@@ -14,7 +13,7 @@ pub struct Pcie<'a> {
 
 #[derive(Debug, Clone, Copy)]
 pub struct PcieBandwidthAndThroughput {
-    pub lines: u32,
+    pub lanes: u32,
     pub frequency: u64,
     pub pkg_sent: u64,
     pub pkg_recived: u64,
@@ -27,24 +26,24 @@ pub struct PcieIdentifiers {
     pub associated_numa_node: u32,
 }
 
-impl Pcie<'_> {
+impl Pcie {
     #[inline(always)]
     pub(crate) fn get_pcie(dv_ind: u32) -> Result<Self, RocmErr> {
         unsafe {
-            let bandwidth = pci_bandwidth(dv_ind).check()?;
+            let mut bandwidth = RsmiPcieBandwidthT::default();
+            rsmi_dev_pci_bandwidth_get(dv_ind, &mut bandwidth as *mut RsmiPcieBandwidthT)
+                .try_err()?;
             let id = pcie_id(dv_ind).check()?;
             let numa = topo_numa_affinity(dv_ind).check()?;
             let throughput = pci_throughput(dv_ind).check()?;
 
-            Ok(Self {
+            let len = bandwidth.transfer_rate.num_supported as usize;
+            Ok(Pcie {
                 id: id.data,
                 associated_numa_node: numa.data,
-                current_index: bandwidth.current,
-                lines: from_raw_parts(bandwidth.lines, bandwidth.num_supported as usize),
-                frequencies: from_raw_parts(
-                    bandwidth.frequencies,
-                    bandwidth.num_supported as usize,
-                ),
+                current_index: bandwidth.transfer_rate.current,
+                lanes: bandwidth.lanes[0..len].to_vec(),
+                frequency: bandwidth.transfer_rate.frequency[0..len].to_vec(),
                 pkg_sent: throughput.sent,
                 pkg_recived: throughput.recived,
                 max_pkg_size: throughput.max_pkg_size,
@@ -54,8 +53,8 @@ impl Pcie<'_> {
 
     pub fn get_bandwidth_and_throughput(&self) -> PcieBandwidthAndThroughput {
         PcieBandwidthAndThroughput {
-            lines: self.lines[self.current_index as usize],
-            frequency: self.frequencies[self.current_index as usize],
+            lanes: self.lanes[self.current_index as usize],
+            frequency: self.frequency[self.current_index as usize],
             pkg_sent: self.pkg_sent,
             pkg_recived: self.pkg_recived,
             max_pkg_size: self.max_pkg_size,

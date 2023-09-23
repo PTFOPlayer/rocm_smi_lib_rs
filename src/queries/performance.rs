@@ -2,8 +2,8 @@ use std::slice::from_raw_parts;
 
 use crate::{
     bindings::{
-        frequency, overdrive_levels, perf_level, util_counters, volt_curve, Check, CurvePoint,
-        RsmiClkType, rsmi_dev_gpu_metrics_info_get, GpuMetrics,
+        frequency, overdrive_levels, perf_level, rsmi_dev_gpu_metrics_info_get, util_counters,
+        volt_curve, Check, CurvePoint, GpuMetrics, RsmiClkType,
     },
     error::RocmErr,
 };

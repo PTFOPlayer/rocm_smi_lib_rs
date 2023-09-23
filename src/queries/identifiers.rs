@@ -28,9 +28,9 @@ impl Identifiers {
         let mut id = 0u16;
         rsmi_dev_id_get(dv_ind, &mut id as *mut u16).try_err()?;
 
-        let mut vendor_id= 0u16;
+        let mut vendor_id = 0u16;
         rsmi_dev_vendor_id_get(dv_ind, &mut vendor_id as *mut u16).try_err()?;
-        
+
         let mut subsystem_id = 0u16;
         rsmi_dev_subsystem_id_get(dv_ind, &mut subsystem_id as *mut u16).try_err()?;
 
@@ -39,11 +39,11 @@ impl Identifiers {
 
         let mut subsystem_vendor_id = 0u16;
         rsmi_dev_subsystem_vendor_id_get(dv_ind, &mut subsystem_vendor_id as *mut u16).try_err()?;
-        
-        let mut unique_id_data =  0u64;
+
+        let mut unique_id_data = 0u64;
         let unique_id = match rsmi_dev_unique_id_get(dv_ind, &mut unique_id_data as *mut u64) {
             RocmErr::RsmiStatusSuccess => Some(unique_id_data),
-            _ => None
+            _ => None,
         };
 
         Ok(Self {
@@ -58,7 +58,7 @@ impl Identifiers {
             subsystem_name: string_from_fn(dv_ind, NAME_SIZE, rsmi_dev_subsystem_name_get)?,
             drm_render_minor,
             subsystem_vendor_id,
-            unique_id
+            unique_id,
         })
     }
 }

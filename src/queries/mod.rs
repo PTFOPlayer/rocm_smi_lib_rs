@@ -1,6 +1,6 @@
-pub mod pcie;
-pub mod power;
-pub mod memory;
-pub mod physical;
-pub mod performance;
 pub mod identifiers;
+pub mod memory;
+pub mod pcie;
+pub mod performance;
+pub mod physical;
+pub mod power;
