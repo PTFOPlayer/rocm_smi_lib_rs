@@ -1,15 +1,15 @@
 #[cfg(test)]
 mod test {
     use crate::{
-        bindings::{RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric, RsmiClkType},
+        bindings::{RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
         error::RocmErr,
-        RocmSmi
+        RocmSmi,
     };
 
     #[test]
     fn full_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
-        
+
         let identifiers = res.get_identifiers()?;
         println!("identifiers: {:?}", identifiers);
         println!(
@@ -42,7 +42,10 @@ mod test {
         println!("perf counters: {:?}", res.get_performance_countes());
         println!("perf level: {:?}", res.get_performance_level());
         println!("overdrive level: {:?}", res.get_overdrive_levels());
-        println!("freq core {:?}", res.get_frequency(RsmiClkType::RsmiClkTypeDf));
+        println!(
+            "freq core {:?}",
+            res.get_frequency(RsmiClkType::RsmiClkTypeDf)
+        );
         println!("f-v curve: {:?}", res.get_frequency_voltage_curve());
         println!("metrics: {:?}", res.get_full_metrics());
 

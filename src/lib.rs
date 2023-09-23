@@ -174,7 +174,7 @@ impl RocmSmi {
     /// # Errors
     ///
     /// This function will return an error if `dv_ind` id not valid device identifier.
-    pub fn get_device_pcie_data<'a>(&self, dv_ind: u32) -> Result<Pcie<'a>, RocmErr> {
+    pub fn get_device_pcie_data<'a>(&self, dv_ind: u32) -> Result<Pcie, RocmErr> {
         Pcie::get_pcie(dv_ind)
     }
 

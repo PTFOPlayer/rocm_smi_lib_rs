@@ -9,4 +9,3 @@ fn main() {
     println!("cargo:rustc-link-lib=rocm_smi64");
     println!("cargo:rustc-link-lib=rsmi64");
 }
-
