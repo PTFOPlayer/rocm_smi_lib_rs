@@ -54,13 +54,15 @@ extern "C" {
         dv_ind: u32,
         bandwidth: *mut RsmiPcieBandwidthT,
     ) -> RocmErr;
-
-    pub(crate) fn pcie_id(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn topo_numa_affinity(dv_ind: u32) -> ResultUint32T;
-    pub(crate) fn pci_throughput(dv_ind: u32) -> ResultPcieThroughput;
+    pub(crate) fn rsmi_dev_pci_id_get(dv_ind: u32, id: *mut u64) -> RocmErr;
+    pub(crate) fn rsmi_topo_numa_affinity_get(dv_ind: u32, numa: *mut u32) -> RocmErr;
+    pub(crate) fn rsmi_dev_pci_throughput_get(dv_ind: u32, sent: *mut u64, received: *mut u64, max_pkt_sz: *mut u64) -> RocmErr;
 
     // power
-    pub(crate) fn power_data(dv_ind: u32) -> ResultPower;
+    pub(crate) fn rsmi_dev_power_ave_get(dv_ind:u32, sensor: u32, ave: *mut u64) -> RocmErr;
+    pub(crate) fn rsmi_dev_power_cap_get(dv_ind:u32, sensor: u32, cap: *mut u64) -> RocmErr;
+    pub(crate) fn rsmi_dev_power_cap_range_get(dv_ind:u32, sensor: u32, max: *mut u64, min: *mut u64) -> RocmErr;
+    pub(crate) fn rsmi_dev_power_cap_default_get(dv_ind: u32, default: *mut u64) -> RocmErr;
 
     // memory
     pub(crate) fn mem_total_vram(dv_ind: u32) -> ResultUint64T;
@@ -165,14 +167,6 @@ pub(crate) struct ResultUint32T {
 }
 
 #[repr(C)]
-pub(crate) struct ResultPcieThroughput {
-    pub(crate) status: u16,
-    pub(crate) sent: u64,
-    pub(crate) recived: u64,
-    pub(crate) max_pkg_size: u64,
-}
-
-#[repr(C)]
 #[derive(Default)]
 pub(crate) struct RsmiFrequenciesT {
     pub(crate) num_supported: u32,
@@ -185,17 +179,6 @@ pub(crate) struct RsmiFrequenciesT {
 pub(crate) struct RsmiPcieBandwidthT {
     pub(crate) transfer_rate: RsmiFrequenciesT,
     pub(crate) lanes: [u32; RSMI_MAX_NUM_FREQUENCIES],
-}
-
-#[repr(C)]
-pub(crate) struct ResultPower {
-    pub(crate) status: u16,
-    pub(crate) sensors: u16,
-    pub(crate) default_power_cap: u64,
-    pub(crate) power_per_sensor: *const u64,
-    pub(crate) power_cap_per_sensor: *const u64,
-    pub(crate) power_cap_min_sensor: *const u64,
-    pub(crate) power_cap_max_sensor: *const u64,
 }
 
 #[repr(C)]
@@ -340,8 +323,6 @@ auto_impl!(
     ResultUint32T,
     ResultUint64T,
     ResultInt64T,
-    ResultPcieThroughput,
-    ResultPower,
     ResultFans,
     ResultUtilCounter,
     ResultOverdriveLevels,

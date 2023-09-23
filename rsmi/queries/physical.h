@@ -55,9 +55,9 @@ result_fans fans(uint32_t dv_ind)
             break;
 
         count++;
-        fan_rpm = (int64_t *)realloc(fan_rpm, count * sizeof(int64_t));
-        fan_speed = (int64_t *)realloc(fan_speed, count * sizeof(int64_t));
-        fan_cap = (uint64_t *)realloc(fan_cap, count * sizeof(uint64_t));
+        fan_rpm = (int64_t *)realloc(fan_rpm, count+1 * sizeof(int64_t));
+        fan_speed = (int64_t *)realloc(fan_speed, count+1 * sizeof(int64_t));
+        fan_cap = (uint64_t *)realloc(fan_cap, count+1 * sizeof(uint64_t));
     }
 
     res.status = RSMI_STATUS_SUCCESS;

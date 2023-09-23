@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod test {
+    use std::time::Duration;
+
     use crate::{
         bindings::{RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
         error::RocmErr,
@@ -11,6 +13,7 @@ mod test {
         let res = RocmSmi::init()?.into_first_device()?;
 
         let identifiers = res.get_identifiers()?;
+        std::thread::sleep(Duration::from_secs_f32(0.5));
         println!("identifiers: {:?}", identifiers);
         println!(
             "unique id (might fail if there is only one gpu) {:?}",
