@@ -3,6 +3,8 @@ Crate bringing support for rocm-smi liblary from C
 
 # Instalation
 
+To use this crate you have to install rocm-smi liblaries
+
 ## Manjaro
 ```
 sudo pacman -S rocm-smi-lib rocm-smi
