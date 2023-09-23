@@ -25,12 +25,6 @@ pub mod device;
 use device::*;
 
 #[derive(Debug)]
-#[non_exhaustive]
-pub struct RocmSmi {
-    device_count: u32,
-}
-
-#[derive(Debug)]
 struct RcStatus {
     count: u32,
     status: RocmErr,
@@ -47,7 +41,18 @@ thread_local!( static INIT_STATUS2: RefCell<RcStatus> = RefCell::new(RcStatus {
     status: RocmErr::RsmiStatusInitError,
 }));
 
+#[derive(Debug)]
+#[non_exhaustive]
+pub struct RocmSmi {
+    device_count: u32,
+}
+
 impl RocmSmi {
+    pub(crate) fn new(count: u32) -> Self {
+        RocmSmi {
+            device_count: count,
+        }
+    }
     /// # Functionality
     ///
     /// This function is used to initiate Rocm, there can be only instance of RocmSmi at time but if you try to initiate it second time it will just use previous instance
@@ -70,10 +75,11 @@ impl RocmSmi {
                 )
             });
 
-            return Ok(RocmSmi {
-                device_count: unsafe { num_devices().check()? }.data,
-            });
+            let mut num_dev = 0u32;
+            unsafe { rsmi_num_monitor_devices(&mut num_dev as *mut u32) }.try_err()?;
+            return Ok(RocmSmi::new(num_dev));
         }
+
         let code = unsafe { rsmi_init(0) };
 
         if code != RocmErr::RsmiStatusSuccess {
@@ -89,9 +95,10 @@ impl RocmSmi {
                 },
             );
         });
-        return Ok(RocmSmi {
-            device_count: unsafe { num_devices().check()? }.data,
-        });
+
+        let mut num_dev = 0u32;
+        unsafe { rsmi_num_monitor_devices(&mut num_dev as *mut u32) }.try_err()?;
+        return Ok(RocmSmi::new(num_dev));
     }
     /// # Functionality
     /// This function converts general Rocm object into object for device with index = 0.

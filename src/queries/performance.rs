@@ -154,9 +154,6 @@ impl FrequencyVoltageCurv<'_> {
 
 pub(crate) unsafe fn get_metrics(dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
     let mut metrics: GpuMetrics = GpuMetrics::default();
-    let res = rsmi_dev_gpu_metrics_info_get(dv_ind, &mut metrics as *mut GpuMetrics);
-    match (res, metrics) {
-        (RocmErr::RsmiStatusSuccess, res) => Ok(res),
-        (err,_) => Err(err) 
-    }
+    rsmi_dev_gpu_metrics_info_get(dv_ind, &mut metrics as *mut GpuMetrics).try_err()?;
+    Ok(metrics)
 }

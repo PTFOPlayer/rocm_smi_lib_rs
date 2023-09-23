@@ -21,8 +21,8 @@ pub enum RocmErr {
     RsmiStatusRefcountOverflow,
     RsmiStatusSettingUnavailable,
     RsmiStatusAmdgpuRestartErr,
-    RsmiStatusUnknownError,
     RsmiStringConversionError,
+    RsmiStatusUnknownError = 0xFFFFFFFF
 }
 
 impl RocmErr {
@@ -56,6 +56,13 @@ impl RocmErr {
 
     pub fn into_u16(self) -> u16 {
         self as u16
+    }
+
+    pub(crate) fn try_err(self) -> Result<(), Self> {
+        match self {
+            RocmErr::RsmiStatusSuccess => Ok(()),
+            _ => Err(self)
+        }
     }
 }
 

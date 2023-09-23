@@ -7,7 +7,6 @@
 #endif
 
 #include "queries/pcie.h"
-#include "queries/identifier.h"
 #include "queries/power.h"
 #include "queries/memory.h"
 #include "queries/physical.h"

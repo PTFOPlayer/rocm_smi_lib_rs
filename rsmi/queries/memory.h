@@ -13,7 +13,6 @@
 
 result_uint64_t mem_total(uint32_t dv_ind, rsmi_memory_type_t mem_type) {
 
-
   uint64_t ammount;
   rsmi_status_t ret = rsmi_dev_memory_total_get(dv_ind, mem_type, &ammount);
 

@@ -1,5 +1,3 @@
-use libc::c_char;
-
 use crate::error::RocmErr;
 
 #[link(name = "rsmi64", kind = "static")]
@@ -7,19 +5,19 @@ extern "C" {
     // identifiers
     pub(crate) fn rsmi_init(init_status: u32) -> RocmErr; 
     pub(crate) fn rsmi_shut_down() -> RocmErr;
-    pub(crate) fn num_devices() -> ResultUint32T;
-    pub(crate) fn device_id(dv_ind: u32) -> ResultUint16T;
-    pub(crate) fn device_name(dv_ind: u32) -> ResultStr;
-    pub(crate) fn device_vendor_id(dv_ind: u32) -> ResultUint16T;
-    pub(crate) fn device_brand(dv_ind: u32) -> ResultStr;
-    pub(crate) fn device_vendor_name(dv_ind: u32) -> ResultStr;
-    pub(crate) fn device_vram_vendor_name(dv_ind: u32) -> ResultStr;
-    pub(crate) fn device_serial(dv_ind: u32) -> ResultStr;
-    pub(crate) fn device_subsystem_id(dv_ind: u32) -> ResultUint16T;
-    pub(crate) fn device_subsystem_name(dv_ind: u32) -> ResultStr;
-    pub(crate) fn device_drm_render(dv_ind: u32) -> ResultUint32T;
-    pub(crate) fn device_subsystem_vendor_id(dv_ind: u32) -> ResultUint16T;
-    pub(crate) fn device_unique_id(dv_ind: u32) -> ResultUint64T;
+    pub(crate) fn rsmi_num_monitor_devices(num_devices: *mut u32) -> RocmErr;
+    pub(crate) fn rsmi_dev_id_get(dv_ind:u32, id: *mut u16) -> RocmErr;
+    pub(crate) fn rsmi_dev_name_get(dv_ind:u32, name: *mut i8, name_length: usize)-> RocmErr;
+    pub(crate) fn rsmi_dev_vendor_id_get(dv_ind:u32, id: *mut u16) -> RocmErr;
+    pub(crate) fn rsmi_dev_brand_get(dv_ind:u32, brand: *mut i8, name_length: usize)-> RocmErr;
+    pub(crate) fn rsmi_dev_vendor_name_get(dv_ind:u32, vendor: *mut i8, name_length: usize)-> RocmErr;
+    pub(crate) fn rsmi_dev_vram_vendor_get(dv_ind:u32, vendor: *mut i8, name_length: usize)-> RocmErr;
+    pub(crate) fn rsmi_dev_serial_number_get(dv_ind:u32, serial_number: *mut i8, name_length: usize)-> RocmErr;
+    pub(crate) fn rsmi_dev_subsystem_id_get(dv_ind:u32, id: *mut u16) -> RocmErr;
+    pub(crate) fn rsmi_dev_subsystem_name_get(dv_ind:u32, subsystem_name: *mut i8, name_length: usize)-> RocmErr;
+    pub(crate) fn rsmi_dev_drm_render_minor_get(dv_ind:u32, render_minor: *mut u32) -> RocmErr;
+    pub(crate) fn rsmi_dev_subsystem_vendor_id_get(dv_ind:u32, subsystem_vendor_id: *mut u16) -> RocmErr;
+    pub(crate) fn rsmi_dev_unique_id_get(dv_ind: u32, unique_id: *mut u64) -> RocmErr;
 
     // pcie
     pub(crate) fn pci_bandwidth(dv_ind: u32) -> ResultPcieBandwidth;
@@ -109,12 +107,6 @@ pub enum RsmiClkType {
     RsmiClkTypeSoc,
     RsmiClkTypeMem,
     RsmiClkTypePcie,
-}
-
-#[repr(C)]
-pub(crate) struct ResultStr {
-    pub(crate) status: u16,
-    pub(crate) data: *mut c_char,
 }
 
 #[repr(C)]
@@ -312,7 +304,6 @@ auto_impl!(
     ResultUint32T,
     ResultUint64T,
     ResultInt64T,
-    ResultStr,
     ResultPcieBandwidth,
     ResultPcieThroughput,
     ResultPower,
@@ -323,14 +314,10 @@ auto_impl!(
     ResultVoltCurve
 );
 
-impl ResultStr {
-    #[inline(always)]
-    pub(crate) fn into_string(self) -> Result<String, RocmErr> {
-        let c_str = unsafe { std::ffi::CStr::from_ptr(self.data) };
-        let data = c_str.to_str().to_owned();
-        match data {
-            Ok(res) => Ok(res.to_owned()),
-            Err(_) => Err(RocmErr::RsmiStringConversionError),
-        }
-    }
+#[inline(always)]
+pub(crate) unsafe fn string_from_fn(dv_ind:u32, name_size: usize, f: unsafe extern "C" fn(u32, *mut i8, usize) -> RocmErr) -> Result<String, RocmErr> {
+    let buff = libc::malloc(name_size).cast();
+    f(dv_ind, buff, name_size).try_err()?;
+    let temp = std::ffi::CString::from_raw(buff);
+    return Ok(temp.to_string_lossy().to_string());
 }
