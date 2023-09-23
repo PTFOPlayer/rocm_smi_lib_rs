@@ -9,6 +9,11 @@ repository = "https://github.com/PTFOPlayer/rocm_lib"
 categories = ["api-bindings", "external-ffi-bindings", "hardware-support"]
 keywords = ["radeon", "rsmi", "hip", "rocm", "gpu"]
 
+exclude = [
+    "rocm_smi_lib",
+    "rocm_smi_lib/*"
+]
+
 [dependencies]
 libc = "0.2.147"
 
