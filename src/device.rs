@@ -1,6 +1,6 @@
 use crate::{
     bindings::{
-        GpuMetrics, RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric,
+        GpuMetrics, RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric, PerformanceLevel,
     },
     error::RocmErr,
     queries::{
@@ -8,7 +8,7 @@ use crate::{
         memory::Memory,
         pcie::Pcie,
         performance::{
-            Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters, PerformanceLevel,
+            Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters,
         },
         physical::Fans,
         power::Power,

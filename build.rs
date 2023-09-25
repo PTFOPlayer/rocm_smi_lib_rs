@@ -1,9 +1,5 @@
 extern crate cmake;
-use std::{
-    env, fs,
-    path::{Path, PathBuf},
-    process::Command, io,
-};
+use std::{fs, io, path::Path, process::Command};
 
 use cmake::Config;
 
@@ -30,12 +26,10 @@ fn main() {
                 .status();
         }
 
-        let rocm_build = Config::new("rocm_smi_lib")
-            .very_verbose(true)
-            .build();
+        let rocm_build = Config::new("rocm_smi_lib").very_verbose(true).build();
         let dest = rocm_build.display().to_string();
         println!("cargo:warning={}", dest);
-        copy_dir_all(dest.clone()+"/lib64", dest.clone()+"/lib").unwrap();
+        copy_dir_all(dest.clone() + "/lib64", dest.clone() + "/lib").unwrap();
         let dst = Config::new("rsmi")
             .define("ROCM_DIR", dest)
             .very_verbose(true)

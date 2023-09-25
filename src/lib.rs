@@ -11,7 +11,6 @@ use queries::{
     pcie::Pcie,
     performance::{
         get_metrics, Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters,
-        PerformanceLevel,
     },
     physical::Fans,
     power::Power,
@@ -196,7 +195,11 @@ impl RocmSmi {
         sensor: RsmiTemperatureSensor,
         metric: RsmiTemperatureMetric,
     ) -> Result<f64, RocmErr> {
-        Ok(unsafe { temperature(dv_ind, sensor, metric).check()?.data as f64 / 1000. })
+        let mut temp = 0i64;
+        unsafe {
+            rsmi_dev_temp_metric_get(dv_ind, sensor, metric, &mut temp as *mut i64).try_err()
+        }?;
+        Ok(temp as f64 / 1000.)
     }
 
     pub fn get_device_voltage_metric(
@@ -204,11 +207,23 @@ impl RocmSmi {
         dv_ind: u32,
         metric: RsmiVoltageMetric,
     ) -> Result<f64, RocmErr> {
-        Ok(unsafe { voltage(dv_ind, metric).check()?.data as f64 / 1000. })
+        let mut volt = 0i64;
+        unsafe {
+            rsmi_dev_volt_metric_get(
+                dv_ind,
+                RsmiVoltageTypeT::RsmiVoltTypeVddgfx,
+                metric,
+                &mut volt as *mut i64,
+            )
+            .try_err()
+        }?;
+        Ok(volt as f64 / 1000.)
     }
 
     pub fn get_device_busy_percent(&self, dv_ind: u32) -> Result<u32, RocmErr> {
-        Ok(unsafe { busy_percent(dv_ind).check()?.data })
+        let mut percent = 0u32;
+        unsafe { rsmi_dev_busy_percent_get(dv_ind, &mut percent as *mut u32).try_err() }?;
+        Ok(percent)
     }
 
     pub fn get_device_performance_countes(

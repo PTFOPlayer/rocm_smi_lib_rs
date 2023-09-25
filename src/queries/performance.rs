@@ -2,8 +2,8 @@ use std::slice::from_raw_parts;
 
 use crate::{
     bindings::{
-        frequency, overdrive_levels, perf_level, rsmi_dev_gpu_metrics_info_get, util_counters,
-        volt_curve, Check, CurvePoint, GpuMetrics, RsmiClkType,
+        frequency, overdrive_levels, rsmi_dev_gpu_metrics_info_get, util_counters,
+        volt_curve, Check, CurvePoint, GpuMetrics, RsmiClkType, PerformanceLevel, rsmi_dev_perf_level_get,
     },
     error::RocmErr,
 };
@@ -24,34 +24,11 @@ impl PerformanceCounters {
     }
 }
 
-#[derive(Debug)]
-pub enum PerformanceLevel {
-    Auto,
-    Low,
-    High,
-    Manual,
-    StableStd,
-    StablePeak,
-    StableMinMclk,
-    StableMinSclk,
-    Determinism,
-    Unknown,
-}
-
 impl PerformanceLevel {
     pub(crate) unsafe fn get_performance_level(dv_ind: u32) -> Result<Self, RocmErr> {
-        Ok(match perf_level(dv_ind).check()?.data {
-            0 => PerformanceLevel::Auto,
-            1 => PerformanceLevel::Low,
-            2 => PerformanceLevel::High,
-            3 => PerformanceLevel::Manual,
-            4 => PerformanceLevel::StableStd,
-            5 => PerformanceLevel::StablePeak,
-            6 => PerformanceLevel::StableMinMclk,
-            7 => PerformanceLevel::StableMinSclk,
-            8 => PerformanceLevel::Determinism,
-            _ => PerformanceLevel::Unknown,
-        })
+        let mut level = PerformanceLevel::Unknown;
+        rsmi_dev_perf_level_get(dv_ind, &mut level as * mut PerformanceLevel).try_err()?;
+        Ok(level)
     }
 }
 

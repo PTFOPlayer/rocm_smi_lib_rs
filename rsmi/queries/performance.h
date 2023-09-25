@@ -7,15 +7,6 @@
 #include "../structs.h"
 #endif
 
-result_uint32_t busy_percent(uint32_t dv_ind)
-{
-    uint32_t percent;
-    rsmi_status_t ret = rsmi_dev_busy_percent_get(dv_ind, &percent);
-
-    result_uint32_t res = {ret, percent};
-    return res;
-}
-
 typedef struct result_util_counter
 {
     uint16_t status;
@@ -34,15 +25,6 @@ result_util_counter util_counters(uint32_t dv_ind)
     rsmi_status_t ret = rsmi_utilization_count_get(dv_ind, counters, count, &timestamp);
 
     result_util_counter res = {ret, counters[0].value, counters[1].value};
-    return res;
-}
-
-result_uint32_t perf_level(uint32_t dv_ind)
-{
-    rsmi_dev_perf_level_t level;
-    rsmi_status_t ret = rsmi_dev_perf_level_get(dv_ind, &level);
-
-    result_uint32_t res = {ret, level};
     return res;
 }
 
