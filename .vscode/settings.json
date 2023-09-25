@@ -11,6 +11,7 @@
         "random": "c",
         "limits": "c",
         "semaphore": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "rocm_smi.h": "c"
     },
 }
