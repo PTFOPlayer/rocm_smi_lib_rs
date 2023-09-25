@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use bindings::*;
 
 pub mod error;
+pub use bindings::RSMI_MAX_FAN_SPEED;
 use error::*;
 use queries::{
     identifiers::Identifiers,
@@ -15,7 +16,6 @@ use queries::{
     physical::Fans,
     power::Power,
 };
-
 mod tests;
 
 pub mod queries;
@@ -241,18 +241,18 @@ impl RocmSmi {
         unsafe { OverdriveLevels::get_overdrive_levels(dv_ind) }
     }
 
-    pub fn get_device_frequency<'a>(
+    pub fn get_device_frequency(
         &self,
         dv_ind: u32,
         freq_type: RsmiClkType,
-    ) -> Result<Frequency<'a>, RocmErr> {
+    ) -> Result<Frequency, RocmErr> {
         unsafe { Frequency::get_freq(dv_ind, freq_type) }
     }
 
-    pub fn get_device_frequency_voltage_curve<'a>(
+    pub fn get_device_frequency_voltage_curve(
         &self,
         dv_ind: u32,
-    ) -> Result<FrequencyVoltageCurv<'a>, RocmErr> {
+    ) -> Result<FrequencyVoltageCurv, RocmErr> {
         unsafe { FrequencyVoltageCurv::get_curve(dv_ind) }
     }
 

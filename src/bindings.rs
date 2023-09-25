@@ -1,20 +1,21 @@
 use crate::error::RocmErr;
 
 // Guaranteed maximum possible number of supported frequencies
-const RSMI_MAX_NUM_FREQUENCIES: usize = 32;
+pub(crate) const RSMI_MAX_NUM_FREQUENCIES: usize = 32;
 
 // Maximum possible value for fan speed. Should be used as the denominator
 // when determining fan speed percentage.
-const RSMI_MAX_FAN_SPEED: usize = 255;
+pub const RSMI_MAX_FAN_SPEED: usize = 255;
 
 // The number of points that make up a voltage-frequency curve definition
-const RSMI_NUM_VOLTAGE_CURVE_POINTS: usize = 3;
+pub(crate) const RSMI_NUM_VOLTAGE_CURVE_POINTS: usize = 3;
 
 #[link(name = "rsmi64", kind = "static")]
 extern "C" {
-    // identifiers
+    // init/shutdown
     pub(crate) fn rsmi_init(init_status: u32) -> RocmErr;
     pub(crate) fn rsmi_shut_down() -> RocmErr;
+    // identifiers
     pub(crate) fn rsmi_num_monitor_devices(num_devices: *mut u32) -> RocmErr;
     pub(crate) fn rsmi_dev_id_get(dv_ind: u32, id: *mut u16) -> RocmErr;
     pub(crate) fn rsmi_dev_name_get(dv_ind: u32, name: *mut i8, name_length: usize) -> RocmErr;
@@ -109,13 +110,25 @@ extern "C" {
     ) -> RocmErr;
 
     //performance
-    pub(crate) fn rsmi_dev_busy_percent_get(dv_ind: u32,  percent: *mut u32) -> RocmErr;
+    pub(crate) fn rsmi_dev_busy_percent_get(dv_ind: u32, percent: *mut u32) -> RocmErr;
     pub(crate) fn rsmi_dev_perf_level_get(dv_ind: u32, level: *mut PerformanceLevel) -> RocmErr;
+    pub(crate) fn rsmi_utilization_count_get(
+        dv_ind: u32,
+        counter: *mut RsmiUtilizationCounterT,
+        count: u32,
+        timestamp: *mut u64,
+    ) -> RocmErr;
+    pub(crate) fn rsmi_dev_gpu_clk_freq_get(
+        dv_ind: u32,
+        clk_type: RsmiClkType,
+        clk: *mut RsmiFrequenciesT,
+    ) -> RocmErr;
 
-    pub(crate) fn util_counters(dv_ind: u32) -> ResultUtilCounter;
-    pub(crate) fn overdrive_levels(dv_ind: u32) -> ResultOverdriveLevels;
-    pub(crate) fn frequency(dv_ind: u32, clk_type: RsmiClkType) -> ResultFrequencies;
-    pub(crate) fn volt_curve(dv_ind: u32) -> ResultVoltCurve;
+    pub(crate) fn rsmi_dev_overdrive_level_get(dv_ind: u32, level: *mut u32) -> RocmErr;
+    pub(crate) fn rsmi_dev_mem_overdrive_level_get(dv_ind: u32, level: *mut u32) -> RocmErr;
+
+    pub(crate) fn rsmi_dev_od_volt_info_get(dv_ind: u32, ov_volt: *mut RsmiOdVoltFreqDataT) -> RocmErr;
+
     pub(crate) fn rsmi_dev_gpu_metrics_info_get(dv_ind: u32, metrics: *mut GpuMetrics) -> RocmErr;
 }
 
@@ -187,7 +200,8 @@ pub enum RsmiMemoryType {
 #[derive(Debug, Clone, Copy, Default)]
 pub enum RsmiVoltageTypeT {
     RsmiVoltTypeVddgfx = 0,
-    #[default] RsmiVoltTypeInvalid = 0xFFFFFFFF,
+    #[default]
+    RsmiVoltTypeInvalid = 0xFFFFFFFF,
 }
 
 #[repr(C)]
@@ -202,7 +216,7 @@ pub enum PerformanceLevel {
     StableMinMclk,
     StableMinSclk,
     Determinism,
-    Unknown = 0x100  
+    Unknown = 0x100,
 }
 
 #[repr(C)]
@@ -220,49 +234,6 @@ pub(crate) struct RsmiPcieBandwidthT {
     pub(crate) lanes: [u32; RSMI_MAX_NUM_FREQUENCIES],
 }
 
-#[repr(C)]
-pub(crate) struct ResultUtilCounter {
-    pub(crate) status: u16,
-    pub(crate) counter_gfx: u64,
-    pub(crate) counter_mem: u64,
-}
-
-#[repr(C)]
-pub(crate) struct ResultOverdriveLevels {
-    pub(crate) status: u16,
-    pub(crate) graphics: u32,
-    pub(crate) memory: u32,
-}
-
-#[repr(C)]
-pub(crate) struct ResultFrequencies {
-    pub(crate) status: u16,
-    pub(crate) num_supported: u32,
-    pub(crate) current: u32,
-    pub(crate) frequency: *mut u64,
-}
-
-#[repr(C)]
-#[derive(Debug, Clone)]
-pub struct CurvePoint {
-    frequency: u64,
-    voltage: u64,
-}
-
-#[repr(C)]
-pub(crate) struct ResultVoltCurve {
-    pub(crate) status: u16,
-    pub(crate) num_regions: u32,
-    pub(crate) curr_sclk_range_min: u64,
-    pub(crate) curr_sclk_range_max: u64,
-    pub(crate) sclk_limit_min: u64,
-    pub(crate) sclk_limit_max: u64,
-    pub(crate) curr_mclk_range_min: u64,
-    pub(crate) curr_mclk_range_max: u64,
-    pub(crate) mclk_limit_min: u64,
-    pub(crate) mclk_limit_max: u64,
-    pub(crate) points: *mut CurvePoint,
-}
 
 #[repr(C)]
 #[derive(Debug, Default, Clone)]
@@ -330,31 +301,50 @@ pub struct GpuMetrics {
     pub temperature_hbm: [u16; 4],
 }
 
-pub(crate) trait Check: Sized {
-    fn check(self) -> Result<Self, RocmErr>;
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub(crate) enum RsmiUtilizationCounterType {
+    RsmiCoarseGrainGfxActivity,
+    RsmiCoarseGrainMemActivity,
 }
 
-macro_rules! auto_impl {
-    ($($t:ty),+) => {
-        $(impl Check for $t {
-            #[inline(always)]
-            fn check(self) -> Result<Self, RocmErr>
-            {
-                if self.status != 0 {
-                    return Err(RocmErr::from_u16(self.status));
-                }
-                Ok(self)
-            }
-        })*
-    }
+#[repr(C)]
+#[derive(Debug, Clone)]
+pub(crate) struct RsmiUtilizationCounterT {
+    pub(crate) counter_type: RsmiUtilizationCounterType,
+    pub(crate) value: u64,
 }
 
-auto_impl!(
-    ResultUtilCounter,
-    ResultOverdriveLevels,
-    ResultFrequencies,
-    ResultVoltCurve
-);
+#[repr(C)]
+#[derive(Debug, Default, Clone)]
+pub struct RsmiRange {
+    pub lower_bound: u32,
+    pub upper_bound: u32,
+}
+
+#[repr(C)]
+#[derive(Debug, Default, Clone)]
+pub struct RsmiOdVddcPoint {
+    pub frequency: u64,
+    pub voltage: u64,
+}
+
+#[repr(C)]
+#[derive(Debug, Default, Clone)]
+pub struct RsmiOdVoltCurveT {
+    pub vc_points: [RsmiOdVddcPoint; RSMI_NUM_VOLTAGE_CURVE_POINTS],
+}
+
+#[repr(C)]
+#[derive(Debug, Default, Clone)]
+pub(crate) struct RsmiOdVoltFreqDataT {
+    pub(crate) curr_sclk_range: RsmiRange,
+    pub(crate) curr_mclk_range: RsmiRange,
+    pub(crate) sclk_freq_limits: RsmiRange,
+    pub(crate) mclk_freq_limits: RsmiRange,
+    pub(crate) curve: RsmiOdVoltCurveT,
+    pub(crate) num_regions: u32,
+}
 
 #[inline(always)]
 pub(crate) unsafe fn string_from_fn(

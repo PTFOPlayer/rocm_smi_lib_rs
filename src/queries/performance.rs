@@ -1,9 +1,9 @@
-use std::slice::from_raw_parts;
-
 use crate::{
     bindings::{
-        frequency, overdrive_levels, rsmi_dev_gpu_metrics_info_get, util_counters,
-        volt_curve, Check, CurvePoint, GpuMetrics, RsmiClkType, PerformanceLevel, rsmi_dev_perf_level_get,
+        rsmi_dev_gpu_clk_freq_get, rsmi_dev_gpu_metrics_info_get, rsmi_dev_mem_overdrive_level_get,
+        rsmi_dev_overdrive_level_get, rsmi_dev_perf_level_get, rsmi_utilization_count_get,
+        GpuMetrics, PerformanceLevel, RsmiClkType, RsmiFrequenciesT,
+        RsmiUtilizationCounterT, RsmiUtilizationCounterType, rsmi_dev_od_volt_info_get, RsmiOdVoltFreqDataT, RsmiRange, RsmiOdVddcPoint,
     },
     error::RocmErr,
 };
@@ -16,10 +16,22 @@ pub struct PerformanceCounters {
 
 impl PerformanceCounters {
     pub(crate) unsafe fn get_counters(dv_ind: u32) -> Result<Self, RocmErr> {
-        let counters = util_counters(dv_ind).check()?;
+        let count_gfx = RsmiUtilizationCounterT {
+            counter_type: RsmiUtilizationCounterType::RsmiCoarseGrainGfxActivity,
+            value: 0,
+        };
+        let count_mem = RsmiUtilizationCounterT {
+            counter_type: RsmiUtilizationCounterType::RsmiCoarseGrainMemActivity,
+            value: 0,
+        };
+        let mut timestamp = 0u64;
+        let mut data = [count_gfx, count_mem];
+        rsmi_utilization_count_get(dv_ind, data.as_mut_ptr(), 2, &mut timestamp as *mut u64)
+            .try_err()?;
+
         Ok(Self {
-            counter_gfx: counters.counter_gfx,
-            counter_mem: counters.counter_mem,
+            counter_gfx: data[0].value,
+            counter_mem: data[1].value,
         })
     }
 }
@@ -27,7 +39,7 @@ impl PerformanceCounters {
 impl PerformanceLevel {
     pub(crate) unsafe fn get_performance_level(dv_ind: u32) -> Result<Self, RocmErr> {
         let mut level = PerformanceLevel::Unknown;
-        rsmi_dev_perf_level_get(dv_ind, &mut level as * mut PerformanceLevel).try_err()?;
+        rsmi_dev_perf_level_get(dv_ind, &mut level as *mut PerformanceLevel).try_err()?;
         Ok(level)
     }
 }
@@ -57,74 +69,57 @@ pub struct OverdriveLevels {
 
 impl OverdriveLevels {
     pub(crate) unsafe fn get_overdrive_levels(dv_ind: u32) -> Result<Self, RocmErr> {
-        let data = overdrive_levels(dv_ind).check()?;
-        Ok(Self {
-            graphics: data.graphics,
-            memory: data.memory,
-        })
+        let mut graphics = 0u32;
+        rsmi_dev_overdrive_level_get(dv_ind, &mut graphics as *mut u32);
+        let mut memory = 0u32;
+        rsmi_dev_mem_overdrive_level_get(dv_ind, &mut memory as *mut u32);
+        Ok(Self { graphics, memory })
     }
 }
 
 #[derive(Debug)]
-pub struct Frequency<'a> {
+pub struct Frequency {
     pub clk_type: RsmiClkType,
     pub current: u64,
-    pub supported: &'a [u64],
+    pub supported: Vec<u64>,
 }
 
-impl Frequency<'_> {
-    pub(crate) unsafe fn get_freq<'a>(
+impl Frequency {
+    pub(crate) unsafe fn get_freq(
         dv_ind: u32,
         clk_type: RsmiClkType,
-    ) -> Result<Frequency<'a>, RocmErr> {
-        let data = frequency(dv_ind, clk_type).check()?;
-        let slice = from_raw_parts(data.frequency, data.num_supported as usize);
+    ) -> Result<Frequency, RocmErr> {
+        let mut clk = RsmiFrequenciesT::default();
+        rsmi_dev_gpu_clk_freq_get(dv_ind, clk_type, &mut clk as *mut RsmiFrequenciesT).try_err()?;
         Ok(Frequency {
             clk_type,
-            current: slice[data.current as usize],
-            supported: slice,
+            current: clk.frequency[clk.current as usize],
+            supported: clk.frequency[0..clk.num_supported as usize].into(),
         })
     }
 }
 
 #[derive(Debug)]
-pub struct ClkRange {
-    pub upper_limit: u64,
-    pub lower_limit: u64,
+pub struct FrequencyVoltageCurv {
+    pub sclk_current_range: RsmiRange,
+    pub sclk_limits: RsmiRange,
+    pub mclk_current_range: RsmiRange,
+    pub mclk_limits: RsmiRange,
+    pub curve_points: Vec<RsmiOdVddcPoint>,
 }
 
-#[derive(Debug)]
-pub struct FrequencyVoltageCurv<'a> {
-    pub sclk_current_range: ClkRange,
-    pub sclk_limits: ClkRange,
-    pub mclk_current_range: ClkRange,
-    pub mclk_limits: ClkRange,
-    pub curve_points: &'a [CurvePoint],
-}
-
-impl FrequencyVoltageCurv<'_> {
-    pub(crate) unsafe fn get_curve<'a>(dv_ind: u32) -> Result<FrequencyVoltageCurv<'a>, RocmErr> {
-        let data = volt_curve(dv_ind).check()?;
-        let curve_points = from_raw_parts(data.points, data.num_regions as usize);
+impl FrequencyVoltageCurv {
+    pub(crate) unsafe fn get_curve(dv_ind: u32) -> Result<FrequencyVoltageCurv, RocmErr> {
+        let mut od_volt = RsmiOdVoltFreqDataT::default();
+        rsmi_dev_od_volt_info_get(dv_ind, &mut od_volt as *mut RsmiOdVoltFreqDataT).try_err()?;
 
         Ok(FrequencyVoltageCurv {
-            sclk_current_range: ClkRange {
-                upper_limit: data.curr_sclk_range_max,
-                lower_limit: data.curr_sclk_range_min,
-            },
-            sclk_limits: ClkRange {
-                upper_limit: data.sclk_limit_max,
-                lower_limit: data.sclk_limit_min,
-            },
-            mclk_current_range: ClkRange {
-                upper_limit: data.curr_mclk_range_max,
-                lower_limit: data.curr_mclk_range_min,
-            },
-            mclk_limits: ClkRange {
-                upper_limit: data.mclk_limit_max,
-                lower_limit: data.mclk_limit_min,
-            },
-            curve_points,
+            sclk_current_range: od_volt.curr_sclk_range,
+            sclk_limits: od_volt.sclk_freq_limits,
+            mclk_current_range: od_volt.curr_mclk_range, 
+            mclk_limits:  od_volt.mclk_freq_limits,
+            curve_points: od_volt.curve.vc_points[0..od_volt.num_regions as usize].into(),
+            
         })
     }
 }

@@ -79,11 +79,11 @@ impl RocmSmiDevice {
         self.rocm.get_device_overdrive_levels(self.id)
     }
 
-    pub fn get_frequency<'a>(&self, freq_type: RsmiClkType) -> Result<Frequency<'a>, RocmErr> {
+    pub fn get_frequency(&self, freq_type: RsmiClkType) -> Result<Frequency, RocmErr> {
         self.rocm.get_device_frequency(self.id, freq_type)
     }
 
-    pub fn get_frequency_voltage_curve<'a>(&self) -> Result<FrequencyVoltageCurv<'a>, RocmErr> {
+    pub fn get_frequency_voltage_curve<'a>(&self) -> Result<FrequencyVoltageCurv, RocmErr> {
         self.rocm.get_device_frequency_voltage_curve(self.id)
     }
 
