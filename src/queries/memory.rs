@@ -16,25 +16,73 @@ pub struct MemoryUsed {
 
 #[derive(Debug, Clone, Copy)]
 pub struct Memory {
-    pub total: MemoryTotal,
-    pub used: MemoryUsed,
+    pub vram_total: u64,
+    pub vram_used: u64,
+    pub vis_vram_total: u64,
+    pub vis_vram_used: u64,
+    pub gtt_total: u64,
+    pub gtt_used: u64,
     pub busy_percent: u32,
 }
 
 impl Memory {
     pub(crate) unsafe fn get_memory(dv_ind: u32) -> Result<Memory, RocmErr> {
+        let mut vram_total = 0u64;
+        let mut vram_used = 0u64;
+        rsmi_dev_memory_total_get(
+            dv_ind,
+            RsmiMemoryType::RsmiMemTypeVram,
+            &mut vram_total as *mut u64,
+        )
+        .try_err()?;
+        rsmi_dev_memory_usage_get(
+            dv_ind,
+            RsmiMemoryType::RsmiMemTypeVram,
+            &mut vram_used as *mut u64,
+        )
+        .try_err()?;
+
+        let mut vis_vram_total = 0u64;
+        let mut vis_vram_used = 0u64;
+        rsmi_dev_memory_total_get(
+            dv_ind,
+            RsmiMemoryType::RsmiMemTypeVisVram,
+            &mut vis_vram_total as *mut u64,
+        )
+        .try_err()?;
+        rsmi_dev_memory_usage_get(
+            dv_ind,
+            RsmiMemoryType::RsmiMemTypeVisVram,
+            &mut vis_vram_used as *mut u64,
+        )
+        .try_err()?;
+
+        let mut gtt_total = 0u64;
+        let mut gtt_used = 0u64;
+        rsmi_dev_memory_total_get(
+            dv_ind,
+            RsmiMemoryType::RsmiMemTypeGtt,
+            &mut gtt_total as *mut u64,
+        )
+        .try_err()?;
+        rsmi_dev_memory_usage_get(
+            dv_ind,
+            RsmiMemoryType::RsmiMemTypeGtt,
+            &mut gtt_used as *mut u64,
+        )
+        .try_err()?;
+
+        let mut busy_percent = 0u32;
+        rsmi_dev_memory_busy_percent_get(dv_ind, &mut busy_percent as *mut u32).try_err()?;
+
         Ok(Memory {
-            total: MemoryTotal {
-                vram: mem_total_vram(dv_ind).check()?.data,
-                vis_vram: mem_total_vis_vram(dv_ind).check()?.data,
-                gtt: mem_total_gtt(dv_ind).check()?.data,
-            },
-            used: MemoryUsed {
-                vram: mem_used_vram(dv_ind).check()?.data,
-                vis_vram: mem_used_vis_vram(dv_ind).check()?.data,
-                gtt: mem_used_gtt(dv_ind).check()?.data,
-            },
-            busy_percent: memory_busy_percent(dv_ind).check()?.data,
+            busy_percent,
+            vram_used,
+            vis_vram_used,
+            gtt_used,
+            vram_total,
+            vis_vram_total,
+            gtt_total,
         })
     }
 }

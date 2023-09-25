@@ -6,6 +6,4 @@
 #include "../structs.h"
 #endif
 
-#include "queries/memory.h"
-#include "queries/physical.h"
 #include "queries/performance.h"

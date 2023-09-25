@@ -56,36 +56,63 @@ extern "C" {
     ) -> RocmErr;
     pub(crate) fn rsmi_dev_pci_id_get(dv_ind: u32, id: *mut u64) -> RocmErr;
     pub(crate) fn rsmi_topo_numa_affinity_get(dv_ind: u32, numa: *mut u32) -> RocmErr;
-    pub(crate) fn rsmi_dev_pci_throughput_get(dv_ind: u32, sent: *mut u64, received: *mut u64, max_pkt_sz: *mut u64) -> RocmErr;
+    pub(crate) fn rsmi_dev_pci_throughput_get(
+        dv_ind: u32,
+        sent: *mut u64,
+        received: *mut u64,
+        max_pkt_sz: *mut u64,
+    ) -> RocmErr;
 
     // power
-    pub(crate) fn rsmi_dev_power_ave_get(dv_ind:u32, sensor: u32, ave: *mut u64) -> RocmErr;
-    pub(crate) fn rsmi_dev_power_cap_get(dv_ind:u32, sensor: u32, cap: *mut u64) -> RocmErr;
-    pub(crate) fn rsmi_dev_power_cap_range_get(dv_ind:u32, sensor: u32, max: *mut u64, min: *mut u64) -> RocmErr;
+    pub(crate) fn rsmi_dev_power_ave_get(dv_ind: u32, sensor: u32, ave: *mut u64) -> RocmErr;
+    pub(crate) fn rsmi_dev_power_cap_get(dv_ind: u32, sensor: u32, cap: *mut u64) -> RocmErr;
+    pub(crate) fn rsmi_dev_power_cap_range_get(
+        dv_ind: u32,
+        sensor: u32,
+        max: *mut u64,
+        min: *mut u64,
+    ) -> RocmErr;
     pub(crate) fn rsmi_dev_power_cap_default_get(dv_ind: u32, default: *mut u64) -> RocmErr;
 
     // memory
-    pub(crate) fn mem_total_vram(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn mem_total_vis_vram(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn mem_total_gtt(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn mem_used_vram(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn mem_used_vis_vram(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn mem_used_gtt(dv_ind: u32) -> ResultUint64T;
-    pub(crate) fn memory_busy_percent(dv_ind: u32) -> ResultUint32T;
+    pub(crate) fn rsmi_dev_memory_total_get(
+        dv_ind: u32,
+        mem_type: RsmiMemoryType,
+        total: *mut u64,
+    ) -> RocmErr;
+    pub(crate) fn rsmi_dev_memory_usage_get(
+        dv_ind: u32,
+        mem_type: RsmiMemoryType,
+        usage: *mut u64,
+    ) -> RocmErr;
+    pub(crate) fn rsmi_dev_memory_busy_percent_get(dv_ind: u32, percent: *mut u32) -> RocmErr;
 
     //physical
-    pub(crate) fn fans(dv_ind: u32) -> ResultFans;
-    pub(crate) fn temperature(
+    pub(crate) fn rsmi_dev_fan_rpms_get(dv_ind: u32, sensor: u32, rpm: *mut i64) -> RocmErr;
+    pub(crate) fn rsmi_dev_fan_speed_get(dv_ind: u32, sensor: u32, speed: *mut i64) -> RocmErr;
+    pub(crate) fn rsmi_dev_fan_speed_max_get(
+        dv_ind: u32,
+        sensor: u32,
+        speed_max: *mut u64,
+    ) -> RocmErr;
+    pub(crate) fn rsmi_dev_temp_metric_get(
         dv_ind: u32,
         sensor: RsmiTemperatureSensor,
         metric: RsmiTemperatureMetric,
-    ) -> ResultInt64T;
-    pub(crate) fn voltage(dv_ind: u32, metric: RsmiVoltageMetric) -> ResultInt64T;
+        temperature: *mut i64,
+    ) -> RocmErr;
+    pub(crate) fn rsmi_dev_volt_metric_get(
+        dv_ind: u32,
+        voltage_type: RsmiVoltageTypeT,
+        metric: RsmiVoltageMetric,
+        volt: *mut i64,
+    ) -> RocmErr;
 
     //performance
+    pub(crate) fn rsmi_dev_busy_percent_get(dv_ind: u32,  percent: *mut u32) -> RocmErr;
+    pub(crate) fn rsmi_dev_perf_level_get(dv_ind: u32, level: *mut PerformanceLevel) -> RocmErr;
+
     pub(crate) fn util_counters(dv_ind: u32) -> ResultUtilCounter;
-    pub(crate) fn busy_percent(dv_ind: u32) -> ResultUint32T;
-    pub(crate) fn perf_level(dv_ind: u32) -> ResultUint32T;
     pub(crate) fn overdrive_levels(dv_ind: u32) -> ResultOverdriveLevels;
     pub(crate) fn frequency(dv_ind: u32, clk_type: RsmiClkType) -> ResultFrequencies;
     pub(crate) fn volt_curve(dv_ind: u32) -> ResultVoltCurve;
@@ -149,21 +176,33 @@ pub enum RsmiClkType {
 }
 
 #[repr(C)]
-pub(crate) struct ResultInt64T {
-    pub(crate) status: u16,
-    pub(crate) data: i64,
+#[derive(Debug, Clone, Copy)]
+pub enum RsmiMemoryType {
+    RsmiMemTypeVram,
+    RsmiMemTypeVisVram,
+    RsmiMemTypeGtt,
 }
 
 #[repr(C)]
-pub(crate) struct ResultUint64T {
-    pub(crate) status: u16,
-    pub(crate) data: u64,
+#[derive(Debug, Clone, Copy, Default)]
+pub enum RsmiVoltageTypeT {
+    RsmiVoltTypeVddgfx = 0,
+    #[default] RsmiVoltTypeInvalid = 0xFFFFFFFF,
 }
 
 #[repr(C)]
-pub(crate) struct ResultUint32T {
-    pub(crate) status: u16,
-    pub(crate) data: u32,
+#[derive(Debug, Clone, Copy)]
+pub enum PerformanceLevel {
+    Auto,
+    Low,
+    High,
+    Manual,
+    StableStd,
+    StablePeak,
+    StableMinMclk,
+    StableMinSclk,
+    Determinism,
+    Unknown = 0x100  
 }
 
 #[repr(C)]
@@ -179,15 +218,6 @@ pub(crate) struct RsmiFrequenciesT {
 pub(crate) struct RsmiPcieBandwidthT {
     pub(crate) transfer_rate: RsmiFrequenciesT,
     pub(crate) lanes: [u32; RSMI_MAX_NUM_FREQUENCIES],
-}
-
-#[repr(C)]
-pub(crate) struct ResultFans {
-    pub(crate) status: u16,
-    pub(crate) sensors: u16,
-    pub(crate) fan_rpm_per_sensor: *const i64,
-    pub(crate) fan_speed_per_sensor: *const i64,
-    pub(crate) max_fan_speed_per_sensor: *const u64,
 }
 
 #[repr(C)]
@@ -320,10 +350,6 @@ macro_rules! auto_impl {
 }
 
 auto_impl!(
-    ResultUint32T,
-    ResultUint64T,
-    ResultInt64T,
-    ResultFans,
     ResultUtilCounter,
     ResultOverdriveLevels,
     ResultFrequencies,
