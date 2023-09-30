@@ -2,7 +2,7 @@ use std::{mem::size_of, slice::from_raw_parts};
 
 use libc::{malloc, realloc};
 
-use crate::{bindings::*, error::RocmErr};
+use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
 
 #[derive(Debug, Clone)]
 pub struct Power<'a> {

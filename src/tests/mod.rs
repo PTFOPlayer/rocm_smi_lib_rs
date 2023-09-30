@@ -2,11 +2,12 @@
 mod test {
     use std::time::Duration;
 
-    use crate::{
+    use rocm_smi_lib_sys::{
         bindings::{RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
         error::RocmErr,
-        RocmSmi,
     };
+
+    use crate::RocmSmi;
 
     #[test]
     fn full_test() -> Result<(), RocmErr> {

@@ -1,4 +1,4 @@
-use crate::{bindings::*, error::RocmErr};
+use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
 
 #[derive(Debug, Clone, Copy)]
 pub struct MemoryTotal {
