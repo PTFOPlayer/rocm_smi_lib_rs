@@ -2,7 +2,7 @@
 name = "rocm_smi_lib"
 version = "0.1.12"
 edition = "2021"
-license = "GPL-3.0"
+license = "MIT or Apache-2.0"
 authors = ["WhiskyAKM"]
 description = "easy to use crate for using rocm-smi from rust"
 repository = "https://github.com/PTFOPlayer/rocm_lib"
