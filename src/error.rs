@@ -58,7 +58,7 @@ impl RocmErr {
         self as u16
     }
 
-    pub(crate) fn try_err(self) -> Result<(), Self> {
+    pub fn try_err(self) -> Result<(), Self> {
         match self {
             RocmErr::RsmiStatusSuccess => Ok(()),
             _ => Err(self),
