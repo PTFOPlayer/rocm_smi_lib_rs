@@ -1,11 +1,6 @@
-mod bindings;
+use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
 use std::cell::RefCell;
 
-use bindings::*;
-
-pub mod error;
-pub use bindings::RSMI_MAX_FAN_SPEED;
-use error::*;
 use queries::{
     identifiers::Identifiers,
     memory::Memory,
@@ -234,7 +229,11 @@ impl RocmSmi {
     }
 
     pub fn get_device_performance_level(&self, dv_ind: u32) -> Result<PerformanceLevel, RocmErr> {
-        unsafe { PerformanceLevel::get_performance_level(dv_ind) }
+        unsafe {
+            let mut level = PerformanceLevel::Unknown;
+            rsmi_dev_perf_level_get(dv_ind, &mut level as *mut PerformanceLevel).try_err()?;
+            Ok(level)
+        }
     }
 
     pub fn get_device_overdrive_levels(&self, dv_ind: u32) -> Result<OverdriveLevels, RocmErr> {

@@ -1,4 +1,4 @@
-use crate::{bindings::*, error::RocmErr};
+use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
 #[derive(Debug)]
 pub struct Pcie {
     pub id: u64,

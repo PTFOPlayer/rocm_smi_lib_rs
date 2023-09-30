@@ -1,8 +1,8 @@
-use crate::{
+use rocm_smi_lib_sys::{
     bindings::{
         rsmi_dev_gpu_clk_freq_get, rsmi_dev_gpu_metrics_info_get, rsmi_dev_mem_overdrive_level_get,
-        rsmi_dev_overdrive_level_get, rsmi_dev_perf_level_get, rsmi_utilization_count_get,
-        GpuMetrics, PerformanceLevel, RsmiClkType, RsmiFrequenciesT,
+        rsmi_dev_overdrive_level_get, rsmi_utilization_count_get,
+        GpuMetrics, RsmiClkType, RsmiFrequenciesT,
         RsmiUtilizationCounterT, RsmiUtilizationCounterType, rsmi_dev_od_volt_info_get, RsmiOdVoltFreqDataT, RsmiRange, RsmiOdVddcPoint,
     },
     error::RocmErr,
@@ -33,31 +33,6 @@ impl PerformanceCounters {
             counter_gfx: data[0].value,
             counter_mem: data[1].value,
         })
-    }
-}
-
-impl PerformanceLevel {
-    pub(crate) unsafe fn get_performance_level(dv_ind: u32) -> Result<Self, RocmErr> {
-        let mut level = PerformanceLevel::Unknown;
-        rsmi_dev_perf_level_get(dv_ind, &mut level as *mut PerformanceLevel).try_err()?;
-        Ok(level)
-    }
-}
-
-impl ToString for PerformanceLevel {
-    fn to_string(&self) -> String {
-        match self {
-            PerformanceLevel::Auto => "performance level: Auto".to_owned(),
-            PerformanceLevel::Low => "performance level: Low".to_owned(),
-            PerformanceLevel::High => "performance level: High".to_owned(),
-            PerformanceLevel::Manual => "performance level: Manual".to_owned(),
-            PerformanceLevel::StableStd => "performance level: Stable Std".to_owned(),
-            PerformanceLevel::StablePeak => "performance level: Stable Peak".to_owned(),
-            PerformanceLevel::StableMinMclk => "performance level: Stable Min MClk".to_owned(),
-            PerformanceLevel::StableMinSclk => "performance level: Stable Min SClk".to_owned(),
-            PerformanceLevel::Determinism => "performance level: Determinism".to_owned(),
-            PerformanceLevel::Unknown => "performance level: Unknown".to_owned(),
-        }
     }
 }
 

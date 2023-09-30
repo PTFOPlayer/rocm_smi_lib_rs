@@ -2,7 +2,7 @@ use std::{mem::size_of, slice::from_raw_parts};
 
 use libc::{malloc, realloc};
 
-use crate::{
+use rocm_smi_lib_sys::{
     bindings::{rsmi_dev_fan_rpms_get, rsmi_dev_fan_speed_get, rsmi_dev_fan_speed_max_get},
     error::RocmErr,
 };

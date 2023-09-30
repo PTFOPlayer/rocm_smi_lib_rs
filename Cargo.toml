@@ -2,7 +2,7 @@
 name = "rocm_smi_lib"
 version = "0.1.12"
 edition = "2021"
-license = "MIT or Apache-2.0"
+license = "MIT OR Apache-2.0"
 authors = ["WhiskyAKM"]
 description = "easy to use crate for using rocm-smi from rust"
 repository = "https://github.com/PTFOPlayer/rocm_lib"
@@ -16,9 +16,7 @@ exclude = [
 
 [dependencies]
 libc = "0.2.147"
-
-[build-dependencies]
-cmake = "0.1.31"
+rocm_smi_lib_sys ={ version = "0.1.0"}
 
 [profile.dev]
 opt-level = 1
@@ -27,4 +25,4 @@ opt-level = 1
 opt-level = 3
 
 [features]
-vendored = []
+vendored = ["rocm_smi_lib_sys/vendored"]

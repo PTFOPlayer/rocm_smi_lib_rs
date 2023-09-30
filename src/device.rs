@@ -1,8 +1,6 @@
+use rocm_smi_lib_sys::{error::RocmErr, bindings::*};
+
 use crate::{
-    bindings::{
-        GpuMetrics, RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric, PerformanceLevel,
-    },
-    error::RocmErr,
     queries::{
         identifiers::Identifiers,
         memory::Memory,
