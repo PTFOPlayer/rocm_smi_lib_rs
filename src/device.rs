@@ -9,7 +9,7 @@ use crate::{
             Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters,
         },
         physical::Fans,
-        power::Power,
+        power::Power, error::EccData,
     },
     RocmSmi,
 };
@@ -87,5 +87,9 @@ impl RocmSmiDevice {
 
     pub fn get_full_metrics(&self) -> Result<GpuMetrics, RocmErr> {
         self.rocm.get_device_full_metrics(self.id)
+    }
+
+    pub fn get_ecc_data(self) -> EccData {
+        self.rocm.get_device_ecc_data(self.id)
     }
 }

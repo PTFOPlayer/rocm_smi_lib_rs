@@ -40,7 +40,7 @@ impl Power<'_> {
                 sensor_count,
                 ave.add(sensor_count as usize * size_of::<u64>()),
             );
-            
+
             let ret_cap = rsmi_dev_power_cap_get(
                 dv_ind,
                 sensor_count,

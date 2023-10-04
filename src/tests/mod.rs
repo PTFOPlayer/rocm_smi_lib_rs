@@ -52,6 +52,7 @@ mod test {
         );
         println!("f-v curve: {:?}", res.get_frequency_voltage_curve());
         println!("metrics: {:?}", res.get_full_metrics());
+        println!("ecc: {:?}", res.get_ecc_data());
 
         Ok(())
     }
