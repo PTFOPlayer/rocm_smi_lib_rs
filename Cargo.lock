@@ -28,7 +28,7 @@ checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
 
 [[package]]
 name = "rocm_smi_lib"
-version = "0.1.13"
+version = "0.1.14-rc.1"
 dependencies = [
  "libc",
  "rocm_smi_lib_sys",
@@ -36,9 +36,9 @@ dependencies = [
 
 [[package]]
 name = "rocm_smi_lib_sys"
-version = "0.1.0"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22481d359ef06a2827cb9c4d38e3a86f6d7504194bb0d1160ab5484adce69ce0"
+checksum = "8d954e12a3a4622e01137e08ac4b745df33291196cebee60f5711cfdbd4147ad"
 dependencies = [
  "cmake",
  "libc",

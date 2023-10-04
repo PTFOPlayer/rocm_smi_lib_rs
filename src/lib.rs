@@ -9,12 +9,13 @@ use queries::{
         get_metrics, Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters,
     },
     physical::Fans,
-    power::Power,
+    power::Power, error::EccData,
 };
 mod tests;
 
-pub mod queries;
 
+pub use rocm_smi_lib_sys::error;
+pub mod queries;
 pub mod device;
 use device::*;
 
@@ -172,6 +173,28 @@ impl RocmSmi {
         Pcie::get_pcie(dv_ind)
     }
 
+    /// # Functionality
+    ///
+    /// This function returns power information for given device.
+    /// example:
+    /// ```rust,no_compile,ignore
+    /// use rocm_smi_lib::RocmSmi;
+    /// use rocm_smi_lib::error::RocmErr;
+    /// fn print_gpu_pcie_lines() -> Result<(), RocmErr> {
+    ///     let rocm = RocmSmi::init()?;
+    ///     let sensors = rocm.get_device_power_data(0)?.sensor_count;
+    ///     println!("{}", sensors);
+    ///     Ok(())
+    /// }
+    /// ```
+    /// for example for RX 7600 will print you:
+    /// ```no_compile,ignore
+    /// 1
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if `dv_ind` id not valid device identifier.
     pub fn get_device_power_data(&self, dv_ind: u32) -> Result<Power, RocmErr> {
         unsafe { Power::get_power(dv_ind) }
     }
@@ -257,6 +280,10 @@ impl RocmSmi {
 
     pub fn get_device_full_metrics(&self, dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
         unsafe { get_metrics(dv_ind) }
+    }
+
+    pub fn get_device_ecc_data(&self, dv_ind: u32) -> EccData {
+        unsafe {EccData::new(dv_ind)}
     }
 }
 
