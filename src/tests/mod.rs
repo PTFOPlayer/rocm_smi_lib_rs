@@ -7,7 +7,7 @@ mod test {
         error::RocmErr,
     };
 
-    use crate::RocmSmi;
+    use crate::{RocmSmi, queries::version::get_rsmi_version};
 
     #[test]
     fn full_test() -> Result<(), RocmErr> {
@@ -53,7 +53,10 @@ mod test {
         println!("f-v curve: {:?}", res.get_frequency_voltage_curve());
         println!("metrics: {:?}", res.get_full_metrics());
         println!("ecc: {:?}", res.get_ecc_data());
+        println!("vbios: {:?}", res.get_vbios_version());
 
+
+        println!("rsmi_v: {:?}", get_rsmi_version());
         Ok(())
     }
 }

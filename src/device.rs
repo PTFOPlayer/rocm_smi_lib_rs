@@ -89,7 +89,11 @@ impl RocmSmiDevice {
         self.rocm.get_device_full_metrics(self.id)
     }
 
-    pub fn get_ecc_data(self) -> EccData {
+    pub fn get_ecc_data(&self) -> EccData {
         self.rocm.get_device_ecc_data(self.id)
+    }
+
+    pub fn get_vbios_version(&self) -> Result<String, RocmErr> {
+        self.rocm.get_device_vbios_version(self.id)
     }
 }

@@ -2,6 +2,7 @@ use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
 use std::cell::RefCell;
 
 use queries::{
+    error::EccData,
     identifiers::Identifiers,
     memory::Memory,
     pcie::Pcie,
@@ -9,14 +10,13 @@ use queries::{
         get_metrics, Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters,
     },
     physical::Fans,
-    power::Power, error::EccData,
+    power::Power,
 };
 mod tests;
 
-
 pub use rocm_smi_lib_sys::error;
-pub mod queries;
 pub mod device;
+pub mod queries;
 use device::*;
 
 #[derive(Debug)]
@@ -283,7 +283,11 @@ impl RocmSmi {
     }
 
     pub fn get_device_ecc_data(&self, dv_ind: u32) -> EccData {
-        unsafe {EccData::new(dv_ind)}
+        unsafe { EccData::new(dv_ind) }
+    }
+
+    pub fn get_device_vbios_version(&self, dv_ind: u32) -> Result<String, RocmErr> {
+        unsafe { string_from_fn(dv_ind, 128, rsmi_dev_vbios_version_get) }
     }
 }
 
@@ -316,3 +320,25 @@ impl Drop for RocmSmi {
         }
     }
 }
+
+pub fn get_compute_process_info<'a>() -> Result<&'a [RsmiProcessInfoT], RocmErr> {
+    let mut num_items = 0u32;
+    let procs = vec![].as_mut_ptr();
+    unsafe {
+        rsmi_compute_process_info_get(procs, &mut num_items as *mut u32).try_err()?;
+    }
+    Ok(unsafe { std::slice::from_raw_parts_mut(procs, num_items as usize) })
+}
+
+pub fn get_compute_process_info_by_pid(pid: u32) -> Result<RsmiProcessInfoT, RocmErr> {
+    let mut procs = RsmiProcessInfoT::default();
+    unsafe {
+        rsmi_compute_process_info_by_pid_get(pid, &mut procs as *mut RsmiProcessInfoT).try_err()?
+    };
+    Ok(procs)
+}
+
+// pub fn rsmi_compute_process_gpus_get(pid: u32) -> Result<&[u32], RocmErr> {
+//     let mut indices = vec![].as_mut_ptr();
+//     let mut num_devices = 0u32;
+// }
