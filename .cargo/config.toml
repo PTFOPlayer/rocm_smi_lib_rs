@@ -2,3 +2,6 @@
 [alias]
 tn = "test -- --nocapture"
 tnf = "test --all-features -- --nocapture"
+
+[target.x86_64-unknown-linux-gnu]
+runner = 'sudo -E'
