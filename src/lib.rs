@@ -1,5 +1,7 @@
+use functions::supported_fn::get_supported_fn;
+use lazy_static::lazy_static;
 use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
-use std::cell::RefCell;
+use std::sync::{Arc, Mutex};
 
 use queries::{
     error::EccData,
@@ -16,6 +18,7 @@ mod tests;
 
 pub use rocm_smi_lib_sys::error;
 pub mod device;
+pub mod functions;
 pub mod queries;
 use device::*;
 
@@ -31,10 +34,12 @@ pub struct DeleteStatus {
     pub deletion_status: RocmErr,
 }
 
-thread_local!( static INIT_STATUS2: RefCell<RcStatus> = RefCell::new(RcStatus {
-    count: 0,
-    status: RocmErr::RsmiStatusInitError,
-}));
+lazy_static! {
+    static ref INIT_STATUS: Arc<Mutex<RcStatus>> = Arc::new(Mutex::new(RcStatus {
+        count: 0,
+        status: RocmErr::RsmiStatusInitError
+    }));
+}
 
 #[derive(Debug)]
 #[non_exhaustive]
@@ -56,19 +61,11 @@ impl RocmSmi {
     ///
     /// This function will return an error if it's impossible to initiate Rocm.
     pub fn init() -> Result<Self, RocmErr> {
-        let status = INIT_STATUS2.with(|data| data.borrow().status);
-        let count = INIT_STATUS2.with(|data| data.borrow().count);
+        let mut status_lock = INIT_STATUS.lock().map_err(|_| RocmErr::RsmiStatusBusy)?;
 
-        if status == RocmErr::RsmiStatusSuccess {
-            INIT_STATUS2.with(|data| {
-                RefCell::replace(
-                    &data,
-                    RcStatus {
-                        count: count + 1,
-                        status: RocmErr::RsmiStatusSuccess,
-                    },
-                )
-            });
+        if status_lock.status == RocmErr::RsmiStatusSuccess {
+            status_lock.count += 1;
+            status_lock.status = RocmErr::RsmiStatusSuccess;
 
             let mut num_dev = 0u32;
             unsafe { rsmi_num_monitor_devices(&mut num_dev as *mut u32) }.try_err()?;
@@ -81,15 +78,8 @@ impl RocmSmi {
             return Err(code);
         }
 
-        INIT_STATUS2.with(|data| {
-            RefCell::replace(
-                &data,
-                RcStatus {
-                    count: 1,
-                    status: code,
-                },
-            );
-        });
+        status_lock.count += 1;
+        status_lock.status = code;
 
         let mut num_dev = 0u32;
         unsafe { rsmi_num_monitor_devices(&mut num_dev as *mut u32) }.try_err()?;
@@ -289,31 +279,24 @@ impl RocmSmi {
     pub fn get_device_vbios_version(&self, dv_ind: u32) -> Result<String, RocmErr> {
         unsafe { string_from_fn(dv_ind, 128, rsmi_dev_vbios_version_get) }
     }
+
+    pub fn get_supported_functions(&self) -> Result<Vec<String>, RocmErr> {
+        unsafe { get_supported_fn() }
+    }
 }
 
 impl Drop for RocmSmi {
     fn drop(&mut self) {
-        let count = INIT_STATUS2.with(|data| data.borrow().count);
-        if count > 1 {
-            INIT_STATUS2.with(|data| {
-                RefCell::replace(
-                    &data,
-                    RcStatus {
-                        count: count - 1,
-                        status: RocmErr::RsmiStatusSuccess,
-                    },
-                );
-            });
+        let mut status_lock = INIT_STATUS
+            .lock()
+            .map_err(|_| RocmErr::RsmiStatusBusy)
+            .expect("Critical Runtime Error: could not close RSMI instance");
+        if status_lock.count > 1 {
+            status_lock.count -= 1;
         } else {
-            INIT_STATUS2.with(|data| {
-                RefCell::replace(
-                    &data,
-                    RcStatus {
-                        count: 0,
-                        status: RocmErr::RsmiStatusInitError,
-                    },
-                );
-            });
+            status_lock.count -= 1;
+
+            status_lock.status = RocmErr::RsmiStatusInitError;
             unsafe {
                 rsmi_shut_down();
             }
