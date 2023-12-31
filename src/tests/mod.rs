@@ -76,13 +76,13 @@ mod test {
     fn main_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
         println!("{}", res.id);
-        // let identifiers = res.get_identifiers()?;
+        let identifiers = res.get_identifiers()?;
         std::thread::sleep(Duration::from_secs_f32(0.5));
-        // println!("identifiers: {:?}", identifiers);
-        // println!(
-        //     "unique id (might fail if there is only one gpu) {:?}",
-        //     identifiers.get_unique_id()
-        // );
+        println!("identifiers: {:?}", identifiers);
+        println!(
+            "unique id (might fail if there is only one gpu) {:?}",
+            identifiers.get_unique_id()
+        );
         println!(
             "voltage data: {:?}",
             res.get_voltage_metric(RsmiVoltageMetric::RsmiVoltCurrent)
