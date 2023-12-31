@@ -1,4 +1,6 @@
 #[cfg(test)]
+
+
 mod test {
     use std::time::Duration;
 
@@ -10,20 +12,32 @@ mod test {
     use crate::{RocmSmi, queries::version::get_rsmi_version};
 
     #[test]
-    fn full_test() -> Result<(), RocmErr> {
+    fn pcie_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
-
-        let identifiers = res.get_identifiers()?;
-        std::thread::sleep(Duration::from_secs_f32(0.5));
-        println!("identifiers: {:?}", identifiers);
-        println!(
-            "unique id (might fail if there is only one gpu) {:?}",
-            identifiers.get_unique_id()
-        );
         println!("pcie data: {:?}", res.get_pcie_data());
+        Ok(())
+    }
+    #[test]
+    fn pwr_test() -> Result<(), RocmErr> {
+        let res = RocmSmi::init()?.into_first_device()?;
         println!("power data: {:?}", res.get_power_data());
+        Ok(())
+    }
+    #[test]
+    fn mem_test() -> Result<(), RocmErr> {
+        let res = RocmSmi::init()?.into_first_device()?;
         println!("memory data: {:?}", res.get_memory_data());
+        Ok(())
+    }
+    #[test]
+    fn fans_test() -> Result<(), RocmErr> {
+        let res = RocmSmi::init()?.into_first_device()?;
         println!("fans data: {:?}", res.get_fans_data());
+        Ok(())
+    }
+    #[test]
+    fn junction_temp_test() -> Result<(), RocmErr> {
+        let res = RocmSmi::init()?.into_first_device()?;
         println!(
             "junction temperature data: {:?}",
             res.get_temperature_metric(
@@ -31,6 +45,11 @@ mod test {
                 RsmiTemperatureMetric::RsmiTempCurrent
             )
         );
+        Ok(())
+    }
+    #[test]
+    fn mem_temp_test() -> Result<(), RocmErr> {
+        let res = RocmSmi::init()?.into_first_device()?;
         println!(
             "memory temperature data: {:?}",
             res.get_temperature_metric(
@@ -38,6 +57,32 @@ mod test {
                 RsmiTemperatureMetric::RsmiTempCurrent,
             )
         );
+        Ok(())
+    }
+
+    #[test]
+    fn supported_fn_test() -> Result<(), RocmErr> {
+        let res = RocmSmi::init()?;
+        println!("supported functions:");
+        let names = res.get_supported_functions()?;
+        for name in names  {
+            println!("\t{:?}", name);
+        }
+        Ok(())
+    }
+
+
+    #[test]
+    fn main_test() -> Result<(), RocmErr> {
+        let res = RocmSmi::init()?.into_first_device()?;
+        println!("{}", res.id);
+        // let identifiers = res.get_identifiers()?;
+        std::thread::sleep(Duration::from_secs_f32(0.5));
+        // println!("identifiers: {:?}", identifiers);
+        // println!(
+        //     "unique id (might fail if there is only one gpu) {:?}",
+        //     identifiers.get_unique_id()
+        // );
         println!(
             "voltage data: {:?}",
             res.get_voltage_metric(RsmiVoltageMetric::RsmiVoltCurrent)
