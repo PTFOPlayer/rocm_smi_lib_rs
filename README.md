@@ -78,7 +78,7 @@ fn print_gpu_name() -> Result<(), RocmErr> {
 Same thing as above but with creation of device object
 ```rust
 fn print_gpu_name() -> Result<(), RocmErr> {
-    let rocm = RocmSmi::init()?.into_first_device()?;
+    let rocm = RocmSmi::init()?.into_first_device()?; // into first devic requires enabling `device` feature
     let name = rocm.get_identifiers()?.name;
     println!("{}", name);
     Ok(())

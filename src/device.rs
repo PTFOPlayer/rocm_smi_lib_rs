@@ -96,4 +96,9 @@ impl RocmSmiDevice {
     pub fn get_vbios_version(&self) -> Result<String, RocmErr> {
         self.rocm.get_device_vbios_version(self.id)
     }
+    
+    #[cfg(feature = "fn_query")]
+    pub fn get_supported_functions(&self) -> Result<Vec<String>, RocmErr> {
+        self.rocm.get_supported_functions()
+    }
 }
