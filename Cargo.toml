@@ -1,6 +1,6 @@
 [package]
 name = "rocm_smi_lib"
-version = "0.1.15"
+version = "0.1.16"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["WhiskyAKM"]
@@ -27,3 +27,5 @@ opt-level = 3
 
 [features]
 vendored = ["rocm_smi_lib_sys/vendored"]
+fn_query = []
+device = []

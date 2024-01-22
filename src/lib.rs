@@ -1,3 +1,4 @@
+#[cfg(feature = "fn_query")]
 use functions::supported_fn::get_supported_fn;
 use lazy_static::lazy_static;
 use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
@@ -87,6 +88,7 @@ impl RocmSmi {
     }
     /// # Functionality
     /// This function converts general Rocm object into object for device with index = 0.
+    #[cfg(feature = "device")]
     pub fn into_first_device(self) -> Result<RocmSmiDevice, RocmErr> {
         if 0 >= self.get_device_count() {
             return Err(RocmErr::RsmiStatusInputOutOfBounds);
@@ -100,6 +102,7 @@ impl RocmSmi {
     /// # Errors
     ///
     /// This function will return an error if provided `id` is not valid device identifier.
+    #[cfg(feature = "device")]
     pub fn into_device(self, id: u32) -> Result<RocmSmiDevice, RocmErr> {
         if id >= self.get_device_count() {
             return Err(RocmErr::RsmiStatusInputOutOfBounds);
@@ -280,6 +283,7 @@ impl RocmSmi {
         unsafe { string_from_fn(dv_ind, 128, rsmi_dev_vbios_version_get) }
     }
 
+    #[cfg(feature = "fn_query")]
     pub fn get_supported_functions(&self) -> Result<Vec<String>, RocmErr> {
         unsafe { get_supported_fn() }
     }
@@ -304,6 +308,7 @@ impl Drop for RocmSmi {
     }
 }
 
+#[cfg(feature = "process")]
 pub fn get_compute_process_info<'a>() -> Result<&'a [RsmiProcessInfoT], RocmErr> {
     let mut num_items = 0u32;
     let procs = vec![].as_mut_ptr();
@@ -313,6 +318,7 @@ pub fn get_compute_process_info<'a>() -> Result<&'a [RsmiProcessInfoT], RocmErr>
     Ok(unsafe { std::slice::from_raw_parts_mut(procs, num_items as usize) })
 }
 
+#[cfg(feature = "process")]
 pub fn get_compute_process_info_by_pid(pid: u32) -> Result<RsmiProcessInfoT, RocmErr> {
     let mut procs = RsmiProcessInfoT::default();
     unsafe {

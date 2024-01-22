@@ -12,30 +12,35 @@ mod test {
     use crate::{RocmSmi, queries::version::get_rsmi_version};
 
     #[test]
+    #[cfg(feature = "device")]
     fn pcie_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
         println!("pcie data: {:?}", res.get_pcie_data());
         Ok(())
     }
     #[test]
+    #[cfg(feature = "device")]
     fn pwr_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
         println!("power data: {:?}", res.get_power_data());
         Ok(())
     }
     #[test]
+    #[cfg(feature = "device")]
     fn mem_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
         println!("memory data: {:?}", res.get_memory_data());
         Ok(())
     }
     #[test]
+    #[cfg(feature = "device")]
     fn fans_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
         println!("fans data: {:?}", res.get_fans_data());
         Ok(())
     }
     #[test]
+    #[cfg(feature = "device")]
     fn junction_temp_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
         println!(
@@ -47,7 +52,9 @@ mod test {
         );
         Ok(())
     }
+
     #[test]
+    #[cfg(feature = "device")]
     fn mem_temp_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
         println!(
@@ -61,6 +68,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "fn_query")]
     fn supported_fn_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?;
         println!("supported functions:");
@@ -71,7 +79,7 @@ mod test {
         Ok(())
     }
 
-
+    #[cfg(feature = "device")]
     #[test]
     fn main_test() -> Result<(), RocmErr> {
         let res = RocmSmi::init()?.into_first_device()?;
