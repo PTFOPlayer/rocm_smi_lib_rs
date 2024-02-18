@@ -1,7 +1,6 @@
-use rocm_smi_lib_sys::bindings::{
-    rsmi_dev_ecc_count_get, rsmi_dev_ecc_status_get, RsmiErrorCountT,
-    RsmiGpuBlockT, RsmiRasErrStateT,
-};
+use rocm_smi_lib_sys::bindings::{rsmi_dev_ecc_count_get, rsmi_dev_ecc_status_get};
+
+pub use rocm_smi_lib_sys::bindings::{RsmiErrorCountT, RsmiGpuBlockT, RsmiRasErrStateT};
 
 #[derive(Debug)]
 pub struct Block {

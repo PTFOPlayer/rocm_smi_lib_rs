@@ -1,5 +1,7 @@
 use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
 
+pub use rocm_smi_lib_sys::bindings::RsmiMemoryType;
+
 #[derive(Debug, Clone, Copy)]
 pub struct MemoryTotal {
     pub vram: u64,

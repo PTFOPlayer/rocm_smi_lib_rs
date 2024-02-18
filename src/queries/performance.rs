@@ -1,11 +1,14 @@
 use rocm_smi_lib_sys::{
     bindings::{
         rsmi_dev_gpu_clk_freq_get, rsmi_dev_gpu_metrics_info_get, rsmi_dev_mem_overdrive_level_get,
-        rsmi_dev_overdrive_level_get, rsmi_utilization_count_get,
-        GpuMetrics, RsmiClkType, RsmiFrequenciesT,
-        RsmiUtilizationCounterT, RsmiUtilizationCounterType, rsmi_dev_od_volt_info_get, RsmiOdVoltFreqDataT, RsmiRange, RsmiOdVddcPoint,
+        rsmi_dev_od_volt_info_get, rsmi_dev_overdrive_level_get, rsmi_utilization_count_get,
     },
     error::RocmErr,
+};
+
+pub use rocm_smi_lib_sys::bindings::{
+    GpuMetrics, RsmiClkType, RsmiFrequenciesT, RsmiOdVddcPoint, RsmiOdVoltFreqDataT, RsmiRange,
+    RsmiUtilizationCounterT, RsmiUtilizationCounterType,
 };
 
 #[derive(Debug)]
@@ -91,10 +94,9 @@ impl FrequencyVoltageCurv {
         Ok(FrequencyVoltageCurv {
             sclk_current_range: od_volt.curr_sclk_range,
             sclk_limits: od_volt.sclk_freq_limits,
-            mclk_current_range: od_volt.curr_mclk_range, 
-            mclk_limits:  od_volt.mclk_freq_limits,
+            mclk_current_range: od_volt.curr_mclk_range,
+            mclk_limits: od_volt.mclk_freq_limits,
             curve_points: od_volt.curve.vc_points[0..od_volt.num_regions as usize].into(),
-            
         })
     }
 }
