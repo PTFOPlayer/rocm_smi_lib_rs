@@ -1,4 +1,4 @@
-use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
+use rocm_smi_lib_sys::{bindings::*, error::RocmErr, RawRsmi};
 #[derive(Debug)]
 pub struct Pcie {
     pub id: u64,
@@ -28,21 +28,21 @@ pub struct PcieIdentifiers {
 
 impl Pcie {
     #[inline(always)]
-    pub(crate) fn get_pcie(dv_ind: u32) -> Result<Self, RocmErr> {
+    pub(crate) fn get_pcie(raw: &mut RawRsmi, dv_ind: u32) -> Result<Self, RocmErr> {
         unsafe {
-            let bandwidth = &mut RsmiPcieBandwidthT::default();
-            rsmi_dev_pci_bandwidth_get(dv_ind, bandwidth as *mut RsmiPcieBandwidthT).try_err()?;
+            let bandwidth = &mut RsmiPcieBandwidth::default();
+            raw.rsmi_dev_pci_bandwidth_get(dv_ind, bandwidth as *mut RsmiPcieBandwidth).try_err()?;
 
             let mut id = 0u64;
-            rsmi_dev_pci_id_get(dv_ind, &mut id as *mut u64).try_err()?;
+            raw.rsmi_dev_pci_id_get(dv_ind, &mut id as *mut u64).try_err()?;
 
             let mut numa = 0u32;
-            rsmi_topo_numa_affinity_get(dv_ind, &mut numa as *mut u32);
+            raw.rsmi_topo_numa_affinity_get(dv_ind, &mut numa as *mut u32);
 
             let mut pkg_sent = 0u64;
             let mut pkg_recived = 0u64;
             let mut max_pkg_size = 0u64;
-            rsmi_dev_pci_throughput_get(
+            raw.rsmi_dev_pci_throughput_get(
                 dv_ind,
                 &mut pkg_sent as *mut u64,
                 &mut pkg_recived as *mut u64,
