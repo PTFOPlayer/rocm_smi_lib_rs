@@ -1,14 +1,11 @@
 use rocm_smi_lib_sys::{
-    bindings::{
-        rsmi_dev_gpu_clk_freq_get, rsmi_dev_gpu_metrics_info_get, rsmi_dev_mem_overdrive_level_get,
-        rsmi_dev_od_volt_info_get, rsmi_dev_overdrive_level_get, rsmi_utilization_count_get,
-    },
-    error::RocmErr,
+
+    error::RocmErr, RawRsmi,
 };
 
 pub use rocm_smi_lib_sys::bindings::{
-    GpuMetrics, RsmiClkType, RsmiFrequenciesT, RsmiOdVddcPoint, RsmiOdVoltFreqDataT, RsmiRange,
-    RsmiUtilizationCounterT, RsmiUtilizationCounterType,
+    GpuMetrics, RsmiClkType, RsmiFrequencies, RsmiOdVddcPoint, RsmiOdVoltFreqData, RsmiRange,
+    RsmiUtilizationCounter, RsmiUtilizationCounterType,
 };
 
 #[derive(Debug)]
@@ -18,18 +15,18 @@ pub struct PerformanceCounters {
 }
 
 impl PerformanceCounters {
-    pub(crate) unsafe fn get_counters(dv_ind: u32) -> Result<Self, RocmErr> {
-        let count_gfx = RsmiUtilizationCounterT {
+    pub(crate) unsafe fn get_counters(raw: &mut RawRsmi, dv_ind: u32) -> Result<Self, RocmErr> {
+        let count_gfx = RsmiUtilizationCounter {
             counter_type: RsmiUtilizationCounterType::RsmiCoarseGrainGfxActivity,
             value: 0,
         };
-        let count_mem = RsmiUtilizationCounterT {
+        let count_mem = RsmiUtilizationCounter {
             counter_type: RsmiUtilizationCounterType::RsmiCoarseGrainMemActivity,
             value: 0,
         };
         let mut timestamp = 0u64;
         let mut data = [count_gfx, count_mem];
-        rsmi_utilization_count_get(dv_ind, data.as_mut_ptr(), 2, &mut timestamp as *mut u64)
+        raw.rsmi_utilization_count_get(dv_ind, data.as_mut_ptr(), 2, &mut timestamp as *mut u64)
             .try_err()?;
 
         Ok(Self {
@@ -46,11 +43,11 @@ pub struct OverdriveLevels {
 }
 
 impl OverdriveLevels {
-    pub(crate) unsafe fn get_overdrive_levels(dv_ind: u32) -> Result<Self, RocmErr> {
+    pub(crate) unsafe fn get_overdrive_levels(raw: &mut RawRsmi, dv_ind: u32) -> Result<Self, RocmErr> {
         let mut graphics = 0u32;
-        rsmi_dev_overdrive_level_get(dv_ind, &mut graphics as *mut u32);
+        raw.rsmi_dev_overdrive_level_get(dv_ind, &mut graphics as *mut u32);
         let mut memory = 0u32;
-        rsmi_dev_mem_overdrive_level_get(dv_ind, &mut memory as *mut u32);
+        raw.rsmi_dev_mem_overdrive_level_get(dv_ind, &mut memory as *mut u32);
         Ok(Self { graphics, memory })
     }
 }
@@ -63,12 +60,12 @@ pub struct Frequency {
 }
 
 impl Frequency {
-    pub(crate) unsafe fn get_freq(
+    pub(crate) unsafe fn get_freq(raw: &mut RawRsmi,
         dv_ind: u32,
         clk_type: RsmiClkType,
     ) -> Result<Frequency, RocmErr> {
-        let mut clk = RsmiFrequenciesT::default();
-        rsmi_dev_gpu_clk_freq_get(dv_ind, clk_type, &mut clk as *mut RsmiFrequenciesT).try_err()?;
+        let mut clk = RsmiFrequencies::default();
+        raw.rsmi_dev_gpu_clk_freq_get(dv_ind, clk_type, &mut clk as *mut RsmiFrequencies).try_err()?;
         Ok(Frequency {
             clk_type,
             current: clk.frequency[clk.current as usize],
@@ -87,9 +84,9 @@ pub struct FrequencyVoltageCurv {
 }
 
 impl FrequencyVoltageCurv {
-    pub(crate) unsafe fn get_curve(dv_ind: u32) -> Result<FrequencyVoltageCurv, RocmErr> {
-        let mut od_volt = RsmiOdVoltFreqDataT::default();
-        rsmi_dev_od_volt_info_get(dv_ind, &mut od_volt as *mut RsmiOdVoltFreqDataT).try_err()?;
+    pub(crate) unsafe fn get_curve(raw: &mut RawRsmi, dv_ind: u32) -> Result<FrequencyVoltageCurv, RocmErr> {
+        let mut od_volt = RsmiOdVoltFreqData::default();
+        raw.rsmi_dev_od_volt_info_get(dv_ind, &mut od_volt as *mut RsmiOdVoltFreqData).try_err()?;
 
         Ok(FrequencyVoltageCurv {
             sclk_current_range: od_volt.curr_sclk_range,
@@ -101,8 +98,8 @@ impl FrequencyVoltageCurv {
     }
 }
 
-pub(crate) unsafe fn get_metrics(dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
+pub(crate) unsafe fn get_metrics(raw: &mut RawRsmi, dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
     let mut metrics: GpuMetrics = GpuMetrics::default();
-    rsmi_dev_gpu_metrics_info_get(dv_ind, &mut metrics as *mut GpuMetrics).try_err()?;
+    raw.rsmi_dev_gpu_metrics_info_get(dv_ind, &mut metrics as *mut GpuMetrics).try_err()?;
     Ok(metrics)
 }

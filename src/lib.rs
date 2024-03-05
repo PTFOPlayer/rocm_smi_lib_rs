@@ -1,8 +1,7 @@
 #[cfg(feature = "fn_query")]
 use functions::supported_fn::get_supported_fn;
-use lazy_static::lazy_static;
-use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
-use std::sync::{Arc, Mutex};
+use rocm_smi_lib_sys::{bindings::*, error::RocmErr, RawRsmi};
+
 
 use queries::{
     error::EccData,
@@ -24,34 +23,23 @@ pub mod queries;
 use device::*;
 
 #[derive(Debug)]
-struct RcStatus {
-    count: u32,
-    status: RocmErr,
-}
-
-#[derive(Debug)]
 pub struct DeleteStatus {
     pub remaining_instances: u32,
     pub deletion_status: RocmErr,
-}
-
-lazy_static! {
-    static ref INIT_STATUS: Arc<Mutex<RcStatus>> = Arc::new(Mutex::new(RcStatus {
-        count: 0,
-        status: RocmErr::RsmiStatusInitError
-    }));
 }
 
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct RocmSmi {
     device_count: u32,
+    raw: RawRsmi,
 }
 
 impl RocmSmi {
-    pub(crate) fn new(count: u32) -> Self {
+    pub(crate) fn new(count: u32, raw: RawRsmi) -> Self {
         RocmSmi {
             device_count: count,
+            raw,
         }
     }
     /// # Functionality
@@ -62,34 +50,16 @@ impl RocmSmi {
     ///
     /// This function will return an error if it's impossible to initiate Rocm.
     pub fn init() -> Result<Self, RocmErr> {
-        let mut status_lock = INIT_STATUS.lock().map_err(|_| RocmErr::RsmiStatusBusy)?;
-
-        if status_lock.status == RocmErr::RsmiStatusSuccess {
-            status_lock.count += 1;
-            status_lock.status = RocmErr::RsmiStatusSuccess;
-
-            let mut num_dev = 0u32;
-            unsafe { rsmi_num_monitor_devices(&mut num_dev as *mut u32) }.try_err()?;
-            return Ok(RocmSmi::new(num_dev));
-        }
-
-        let code = unsafe { rsmi_init(0) };
-
-        if code != RocmErr::RsmiStatusSuccess {
-            return Err(code);
-        }
-
-        status_lock.count += 1;
-        status_lock.status = code;
+        let mut raw = unsafe { RawRsmi::new(0) }?;
 
         let mut num_dev = 0u32;
-        unsafe { rsmi_num_monitor_devices(&mut num_dev as *mut u32) }.try_err()?;
-        return Ok(RocmSmi::new(num_dev));
+        unsafe { raw.rsmi_num_monitor_devices(&mut num_dev as *mut u32) }.try_err()?;
+        return Ok(RocmSmi::new(num_dev, raw));
     }
     /// # Functionality
     /// This function converts general Rocm object into object for device with index = 0.
     #[cfg(feature = "device")]
-    pub fn into_first_device(self) -> Result<RocmSmiDevice, RocmErr> {
+    pub fn into_first_device(mut self) -> Result<RocmSmiDevice, RocmErr> {
         if 0 >= self.get_device_count() {
             return Err(RocmErr::RsmiStatusInputOutOfBounds);
         }
@@ -103,7 +73,7 @@ impl RocmSmi {
     ///
     /// This function will return an error if provided `id` is not valid device identifier.
     #[cfg(feature = "device")]
-    pub fn into_device(self, id: u32) -> Result<RocmSmiDevice, RocmErr> {
+    pub fn into_device(mut self, id: u32) -> Result<RocmSmiDevice, RocmErr> {
         if id >= self.get_device_count() {
             return Err(RocmErr::RsmiStatusInputOutOfBounds);
         }
@@ -111,7 +81,7 @@ impl RocmSmi {
     }
 
     /// This function returns device count, last valid device identifier is equal to device cound - 1.
-    pub fn get_device_count(&self) -> u32 {
+    pub fn get_device_count(&mut self) -> u32 {
         self.device_count
     }
     /// # Functionality
@@ -136,8 +106,8 @@ impl RocmSmi {
     /// # Errors
     ///
     /// This function will return an error if `dv_ind` id not valid device identifier.
-    pub fn get_device_identifiers(&self, dv_ind: u32) -> Result<Identifiers, RocmErr> {
-        unsafe { Identifiers::get_identifiers(dv_ind) }
+    pub fn get_device_identifiers(&mut self, dv_ind: u32) -> Result<Identifiers, RocmErr> {
+        unsafe { Identifiers::get_identifiers(&mut self.raw, dv_ind) }
     }
 
     /// # Functionality
@@ -162,8 +132,8 @@ impl RocmSmi {
     /// # Errors
     ///
     /// This function will return an error if `dv_ind` id not valid device identifier.
-    pub fn get_device_pcie_data<'a>(&self, dv_ind: u32) -> Result<Pcie, RocmErr> {
-        Pcie::get_pcie(dv_ind)
+    pub fn get_device_pcie_data<'a>(&mut self, dv_ind: u32) -> Result<Pcie, RocmErr> {
+        Pcie::get_pcie(&mut self.raw, dv_ind)
     }
 
     /// # Functionality
@@ -188,41 +158,41 @@ impl RocmSmi {
     /// # Errors
     ///
     /// This function will return an error if `dv_ind` id not valid device identifier.
-    pub fn get_device_power_data(&self, dv_ind: u32) -> Result<Power, RocmErr> {
-        unsafe { Power::get_power(dv_ind) }
+    pub fn get_device_power_data(&mut self, dv_ind: u32) -> Result<Power, RocmErr> {
+        unsafe { Power::get_power(&mut self.raw, dv_ind) }
     }
 
-    pub fn get_device_memory_data(&self, dv_ind: u32) -> Result<Memory, RocmErr> {
-        unsafe { Memory::get_memory(dv_ind) }
+    pub fn get_device_memory_data(&mut self, dv_ind: u32) -> Result<Memory, RocmErr> {
+        unsafe { Memory::get_memory(&mut self.raw, dv_ind) }
     }
 
-    pub fn get_device_fans_data(&self, dv_ind: u32) -> Result<Fans, RocmErr> {
-        unsafe { Fans::get_fans(dv_ind) }
+    pub fn get_device_fans_data(&mut self, dv_ind: u32) -> Result<Fans, RocmErr> {
+        unsafe { Fans::get_fans(&mut self.raw, dv_ind) }
     }
 
     pub fn get_device_temperature_metric(
-        &self,
+        &mut self,
         dv_ind: u32,
         sensor: RsmiTemperatureSensor,
         metric: RsmiTemperatureMetric,
     ) -> Result<f64, RocmErr> {
         let mut temp = 0i64;
         unsafe {
-            rsmi_dev_temp_metric_get(dv_ind, sensor, metric, &mut temp as *mut i64).try_err()
+            self.raw.rsmi_dev_temp_metric_get(dv_ind, sensor, metric, &mut temp as *mut i64).try_err()
         }?;
         Ok(temp as f64 / 1000.)
     }
 
     pub fn get_device_voltage_metric(
-        &self,
+        &mut self,
         dv_ind: u32,
         metric: RsmiVoltageMetric,
     ) -> Result<f64, RocmErr> {
         let mut volt = 0i64;
         unsafe {
-            rsmi_dev_volt_metric_get(
+            self.raw.rsmi_dev_volt_metric_get(
                 dv_ind,
-                RsmiVoltageTypeT::RsmiVoltTypeVddgfx,
+                RsmiVoltageType::RsmiVoltTypeVddgfx,
                 metric,
                 &mut volt as *mut i64,
             )
@@ -231,80 +201,66 @@ impl RocmSmi {
         Ok(volt as f64 / 1000.)
     }
 
-    pub fn get_device_busy_percent(&self, dv_ind: u32) -> Result<u32, RocmErr> {
+    pub fn get_device_busy_percent(&mut self, dv_ind: u32) -> Result<u32, RocmErr> {
         let mut percent = 0u32;
-        unsafe { rsmi_dev_busy_percent_get(dv_ind, &mut percent as *mut u32).try_err() }?;
+        unsafe { self.raw.rsmi_dev_busy_percent_get(dv_ind, &mut percent as *mut u32).try_err() }?;
         Ok(percent)
     }
 
     pub fn get_device_performance_countes(
-        &self,
+        &mut self,
         dv_ind: u32,
     ) -> Result<PerformanceCounters, RocmErr> {
-        unsafe { PerformanceCounters::get_counters(dv_ind) }
+        unsafe { PerformanceCounters::get_counters(&mut self.raw, dv_ind) }
     }
 
-    pub fn get_device_performance_level(&self, dv_ind: u32) -> Result<PerformanceLevel, RocmErr> {
+    pub fn get_device_performance_level(&mut self, dv_ind: u32) -> Result<PerformanceLevel, RocmErr> {
         unsafe {
             let mut level = PerformanceLevel::Unknown;
-            rsmi_dev_perf_level_get(dv_ind, &mut level as *mut PerformanceLevel).try_err()?;
+            self.raw.rsmi_dev_perf_level_get(dv_ind, &mut level as *mut PerformanceLevel).try_err()?;
             Ok(level)
         }
     }
 
-    pub fn get_device_overdrive_levels(&self, dv_ind: u32) -> Result<OverdriveLevels, RocmErr> {
-        unsafe { OverdriveLevels::get_overdrive_levels(dv_ind) }
+    pub fn get_device_overdrive_levels(&mut self, dv_ind: u32) -> Result<OverdriveLevels, RocmErr> {
+        unsafe { OverdriveLevels::get_overdrive_levels(&mut self.raw, dv_ind) }
     }
 
     pub fn get_device_frequency(
-        &self,
+        &mut self,
         dv_ind: u32,
         freq_type: RsmiClkType,
     ) -> Result<Frequency, RocmErr> {
-        unsafe { Frequency::get_freq(dv_ind, freq_type) }
+        unsafe { Frequency::get_freq(&mut self.raw, dv_ind, freq_type) }
     }
 
     pub fn get_device_frequency_voltage_curve(
-        &self,
+        &mut self,
         dv_ind: u32,
     ) -> Result<FrequencyVoltageCurv, RocmErr> {
-        unsafe { FrequencyVoltageCurv::get_curve(dv_ind) }
+        unsafe { FrequencyVoltageCurv::get_curve(&mut self.raw, dv_ind) }
     }
 
-    pub fn get_device_full_metrics(&self, dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
-        unsafe { get_metrics(dv_ind) }
+    pub fn get_device_full_metrics(&mut self, dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
+        unsafe { get_metrics(&mut self.raw, dv_ind) }
     }
 
-    pub fn get_device_ecc_data(&self, dv_ind: u32) -> EccData {
-        unsafe { EccData::new(dv_ind) }
+    pub fn get_device_ecc_data(&mut self, dv_ind: u32) -> EccData {
+        unsafe { EccData::new(&mut self.raw, dv_ind) }
     }
 
-    pub fn get_device_vbios_version(&self, dv_ind: u32) -> Result<String, RocmErr> {
-        unsafe { string_from_fn(dv_ind, 128, rsmi_dev_vbios_version_get) }
+    pub fn get_device_vbios_version(&mut self, dv_ind: u32) -> Result<String, RocmErr> {
+        unsafe {
+            let buff = libc::malloc(128).cast();
+            self.raw.rsmi_dev_vbios_version_get(dv_ind, buff, 128).try_err()?;
+            let temp = std::ffi::CString::from_raw(buff);
+            return Ok(temp.to_string_lossy().to_string());
+        }
     }
 
     #[cfg(feature = "fn_query")]
-    pub fn get_supported_functions(&self) -> Result<Vec<String>, RocmErr> {
-        unsafe { get_supported_fn() }
-    }
-}
-
-impl Drop for RocmSmi {
-    fn drop(&mut self) {
-        let mut status_lock = INIT_STATUS
-            .lock()
-            .map_err(|_| RocmErr::RsmiStatusBusy)
-            .expect("Critical Runtime Error: could not close RSMI instance");
-        if status_lock.count > 1 {
-            status_lock.count -= 1;
-        } else {
-            status_lock.count -= 1;
-
-            status_lock.status = RocmErr::RsmiStatusInitError;
-            unsafe {
-                rsmi_shut_down();
-            }
-        }
+    pub fn get_supported_functions(&mut self) -> Result<Vec<String>, RocmErr> {
+        unsafe { get_supported_fn(&mut self.raw) }
     }
 }
 
@@ -313,7 +269,7 @@ pub fn get_compute_process_info<'a>() -> Result<&'a [RsmiProcessInfoT], RocmErr>
     let mut num_items = 0u32;
     let procs = vec![].as_mut_ptr();
     unsafe {
-        rsmi_compute_process_info_get(procs, &mut num_items as *mut u32).try_err()?;
+        self.raw.rsmi_compute_process_info_get(procs, &mut num_items as *mut u32).try_err()?;
     }
     Ok(unsafe { std::slice::from_raw_parts_mut(procs, num_items as usize) })
 }
@@ -322,7 +278,7 @@ pub fn get_compute_process_info<'a>() -> Result<&'a [RsmiProcessInfoT], RocmErr>
 pub fn get_compute_process_info_by_pid(pid: u32) -> Result<RsmiProcessInfoT, RocmErr> {
     let mut procs = RsmiProcessInfoT::default();
     unsafe {
-        rsmi_compute_process_info_by_pid_get(pid, &mut procs as *mut RsmiProcessInfoT).try_err()?
+        self.raw.rsmi_compute_process_info_by_pid_get(pid, &mut procs as *mut RsmiProcessInfoT).try_err()?
     };
     Ok(procs)
 }

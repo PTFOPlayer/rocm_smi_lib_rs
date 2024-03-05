@@ -1,16 +1,16 @@
-use rocm_smi_lib_sys::bindings::{rsmi_dev_ecc_count_get, rsmi_dev_ecc_status_get};
+use rocm_smi_lib_sys:: RawRsmi;
 
-pub use rocm_smi_lib_sys::bindings::{RsmiErrorCountT, RsmiGpuBlockT, RsmiRasErrStateT};
+pub use rocm_smi_lib_sys::bindings::{RsmiErrorCount, RsmiGpuBlock, RsmiRasErrState};
 
 #[derive(Debug)]
 pub struct Block {
-    pub entry: RsmiGpuBlockT,
-    pub counters: RsmiErrorCountT,
+    pub entry: RsmiGpuBlock,
+    pub counters: RsmiErrorCount,
 }
 
 #[derive(Debug)]
 pub struct State {
-    pub state: RsmiRasErrStateT,
+    pub state: RsmiRasErrState,
     pub block: Option<Block>,
 }
 
@@ -21,37 +21,37 @@ pub struct EccData {
 
 impl EccData {
     #[inline(always)]
-    pub(crate) unsafe fn new(dv_ind: u32) -> Self {
+    pub(crate) unsafe fn new(raw: &mut RawRsmi, dv_ind: u32) -> Self {
         let iter = [
-            RsmiGpuBlockT::RsmiGpuBlockUmc,
-            RsmiGpuBlockT::RsmiGpuBlockSdma,
-            RsmiGpuBlockT::RsmiGpuBlockGfx,
-            RsmiGpuBlockT::RsmiGpuBlockMmhub,
-            RsmiGpuBlockT::RsmiGpuBlockAthub,
-            RsmiGpuBlockT::RsmiGpuBlockPcieBif,
-            RsmiGpuBlockT::RsmiGpuBlockHdp,
-            RsmiGpuBlockT::RsmiGpuBlockXgmiWafl,
-            RsmiGpuBlockT::RsmiGpuBlockDf,
-            RsmiGpuBlockT::RsmiGpuBlockSmn,
-            RsmiGpuBlockT::RsmiGpuBlockSem,
-            RsmiGpuBlockT::RsmiGpuBlockMp0,
-            RsmiGpuBlockT::RsmiGpuBlockMp1,
-            RsmiGpuBlockT::RsmiGpuBlockFuse,
+            RsmiGpuBlock::RsmiGpuBlockUmc,
+            RsmiGpuBlock::RsmiGpuBlockSdma,
+            RsmiGpuBlock::RsmiGpuBlockGfx,
+            RsmiGpuBlock::RsmiGpuBlockMmhub,
+            RsmiGpuBlock::RsmiGpuBlockAthub,
+            RsmiGpuBlock::RsmiGpuBlockPcieBif,
+            RsmiGpuBlock::RsmiGpuBlockHdp,
+            RsmiGpuBlock::RsmiGpuBlockXgmiWafl,
+            RsmiGpuBlock::RsmiGpuBlockDf,
+            RsmiGpuBlock::RsmiGpuBlockSmn,
+            RsmiGpuBlock::RsmiGpuBlockSem,
+            RsmiGpuBlock::RsmiGpuBlockMp0,
+            RsmiGpuBlock::RsmiGpuBlockMp1,
+            RsmiGpuBlock::RsmiGpuBlockFuse,
         ]
         .iter();
 
         let mut blocks = vec![];
 
         for entry in iter {
-            let mut ec = RsmiErrorCountT {
+            let mut ec = RsmiErrorCount {
                 correctable_err: 0,
                 uncorrectable_err: 0,
             };
 
-            let mut state = RsmiRasErrStateT::RsmiRasErrStateDisabled;
+            let mut state = RsmiRasErrState::RsmiRasErrStateDisabled;
 
-            let ret = rsmi_dev_ecc_count_get(dv_ind, *entry, &mut ec as *mut RsmiErrorCountT);
-            rsmi_dev_ecc_status_get(dv_ind, *entry, &mut state as *mut RsmiRasErrStateT);
+            let ret = raw.rsmi_dev_ecc_count_get(dv_ind, *entry, &mut ec as *mut RsmiErrorCount);
+            raw.rsmi_dev_ecc_status_get(dv_ind, *entry, &mut state as *mut RsmiRasErrState);
 
             let block = if ret.try_err().is_ok() {
                 Some(Block {

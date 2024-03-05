@@ -2,7 +2,7 @@ use std::{mem::size_of, slice::from_raw_parts};
 
 use libc::{malloc, realloc};
 
-use rocm_smi_lib_sys::{bindings::*, error::RocmErr};
+use rocm_smi_lib_sys::{error::RocmErr, RawRsmi};
 
 #[derive(Debug, Clone)]
 pub struct Power<'a> {
@@ -16,16 +16,16 @@ pub struct Power<'a> {
 
 impl Power<'_> {
     #[inline(always)]
-    pub(crate) unsafe fn get_power<'a>(dv_ind: u32) -> Result<Power<'a>, RocmErr> {
+    pub(crate) unsafe fn get_power<'a>(raw: &mut RawRsmi, dv_ind: u32) -> Result<Power<'a>, RocmErr> {
         let mut sensor_count = 0;
         let mut ave = malloc(size_of::<u64>()).cast();
         let mut cap = malloc(size_of::<u64>()).cast();
         let mut max = malloc(size_of::<u64>()).cast();
         let mut min = malloc(size_of::<u64>()).cast();
 
-        rsmi_dev_power_ave_get(dv_ind, sensor_count, ave).try_err()?;
-        rsmi_dev_power_cap_get(dv_ind, sensor_count, cap).try_err()?;
-        rsmi_dev_power_cap_range_get(dv_ind, sensor_count, max, min).try_err()?;
+        raw.rsmi_dev_power_ave_get(dv_ind, sensor_count, ave).try_err()?;
+        raw.rsmi_dev_power_cap_get(dv_ind, sensor_count, cap).try_err()?;
+        raw.rsmi_dev_power_cap_range_get(dv_ind, sensor_count, max, min).try_err()?;
 
         sensor_count += 1;
         let mut counter = sensor_count as usize + 1;
@@ -35,19 +35,19 @@ impl Power<'_> {
             max = realloc(max.cast(), counter * size_of::<u64>()).cast();
             min = realloc(min.cast(), counter * size_of::<u64>()).cast();
 
-            let ret_ave = rsmi_dev_power_ave_get(
+            let ret_ave = raw.rsmi_dev_power_ave_get(
                 dv_ind,
                 sensor_count,
                 ave.add(sensor_count as usize * size_of::<u64>()),
             );
 
-            let ret_cap = rsmi_dev_power_cap_get(
+            let ret_cap = raw.rsmi_dev_power_cap_get(
                 dv_ind,
                 sensor_count,
                 cap.add(sensor_count as usize * size_of::<u64>()),
             );
 
-            let ret_rng = rsmi_dev_power_cap_range_get(
+            let ret_rng = raw.rsmi_dev_power_cap_range_get(
                 dv_ind,
                 sensor_count,
                 max.add(sensor_count as usize * size_of::<u64>()),
@@ -65,7 +65,7 @@ impl Power<'_> {
         }
 
         let mut default_power_cap = 0u64;
-        rsmi_dev_power_cap_default_get(dv_ind, &mut default_power_cap as *mut u64).try_err()?;
+        raw.rsmi_dev_power_cap_default_get(dv_ind, &mut default_power_cap as *mut u64).try_err()?;
 
         Ok(Power {
             sensor_count: sensor_count,

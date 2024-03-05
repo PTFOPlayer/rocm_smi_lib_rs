@@ -9,40 +9,40 @@ mod test {
         error::RocmErr,
     };
 
-    use crate::{RocmSmi, queries::version::get_rsmi_version};
+    use crate::RocmSmi ;
 
     #[test]
     #[cfg(feature = "device")]
     fn pcie_test() -> Result<(), RocmErr> {
-        let res = RocmSmi::init()?.into_first_device()?;
+        let mut res = RocmSmi::init()?.into_first_device()?;
         println!("pcie data: {:?}", res.get_pcie_data());
         Ok(())
     }
     #[test]
     #[cfg(feature = "device")]
     fn pwr_test() -> Result<(), RocmErr> {
-        let res = RocmSmi::init()?.into_first_device()?;
+        let mut res = RocmSmi::init()?.into_first_device()?;
         println!("power data: {:?}", res.get_power_data());
         Ok(())
     }
     #[test]
     #[cfg(feature = "device")]
     fn mem_test() -> Result<(), RocmErr> {
-        let res = RocmSmi::init()?.into_first_device()?;
+        let mut res = RocmSmi::init()?.into_first_device()?;
         println!("memory data: {:?}", res.get_memory_data());
         Ok(())
     }
     #[test]
     #[cfg(feature = "device")]
     fn fans_test() -> Result<(), RocmErr> {
-        let res = RocmSmi::init()?.into_first_device()?;
+        let mut res = RocmSmi::init()?.into_first_device()?;
         println!("fans data: {:?}", res.get_fans_data());
         Ok(())
     }
     #[test]
     #[cfg(feature = "device")]
     fn junction_temp_test() -> Result<(), RocmErr> {
-        let res = RocmSmi::init()?.into_first_device()?;
+        let mut res = RocmSmi::init()?.into_first_device()?;
         println!(
             "junction temperature data: {:?}",
             res.get_temperature_metric(
@@ -56,7 +56,7 @@ mod test {
     #[test]
     #[cfg(feature = "device")]
     fn mem_temp_test() -> Result<(), RocmErr> {
-        let res = RocmSmi::init()?.into_first_device()?;
+        let mut res = RocmSmi::init()?.into_first_device()?;
         println!(
             "memory temperature data: {:?}",
             res.get_temperature_metric(
@@ -70,7 +70,7 @@ mod test {
     #[test]
     #[cfg(feature = "fn_query")]
     fn supported_fn_test() -> Result<(), RocmErr> {
-        let res = RocmSmi::init()?;
+        let mut res = RocmSmi::init()?;
         println!("supported functions:");
         let names = res.get_supported_functions()?;
         for name in names  {
@@ -82,7 +82,7 @@ mod test {
     #[cfg(feature = "device")]
     #[test]
     fn main_test() -> Result<(), RocmErr> {
-        let res = RocmSmi::init()?.into_first_device()?;
+        let mut res = RocmSmi::init()?.into_first_device()?;
         println!("{}", res.id);
         let identifiers = res.get_identifiers()?;
         std::thread::sleep(Duration::from_secs_f32(0.5));
@@ -109,7 +109,7 @@ mod test {
         println!("vbios: {:?}", res.get_vbios_version());
 
 
-        println!("rsmi_v: {:?}", get_rsmi_version());
+        println!("rsmi_v: {:?}", res.get_rsmi_version());
         Ok(())
     }
 }
