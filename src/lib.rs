@@ -2,7 +2,6 @@
 use functions::supported_fn::get_supported_fn;
 use rocm_smi_lib_sys::{bindings::*, error::RocmErr, RawRsmi};
 
-
 use queries::{
     error::EccData,
     identifiers::Identifiers,
@@ -178,7 +177,9 @@ impl RocmSmi {
     ) -> Result<f64, RocmErr> {
         let mut temp = 0i64;
         unsafe {
-            self.raw.rsmi_dev_temp_metric_get(dv_ind, sensor, metric, &mut temp as *mut i64).try_err()
+            self.raw
+                .rsmi_dev_temp_metric_get(dv_ind, sensor, metric, &mut temp as *mut i64)
+                .try_err()
         }?;
         Ok(temp as f64 / 1000.)
     }
@@ -190,20 +191,25 @@ impl RocmSmi {
     ) -> Result<f64, RocmErr> {
         let mut volt = 0i64;
         unsafe {
-            self.raw.rsmi_dev_volt_metric_get(
-                dv_ind,
-                RsmiVoltageType::RsmiVoltTypeVddgfx,
-                metric,
-                &mut volt as *mut i64,
-            )
-            .try_err()
+            self.raw
+                .rsmi_dev_volt_metric_get(
+                    dv_ind,
+                    RsmiVoltageType::RsmiVoltTypeVddgfx,
+                    metric,
+                    &mut volt as *mut i64,
+                )
+                .try_err()
         }?;
         Ok(volt as f64 / 1000.)
     }
 
     pub fn get_device_busy_percent(&mut self, dv_ind: u32) -> Result<u32, RocmErr> {
         let mut percent = 0u32;
-        unsafe { self.raw.rsmi_dev_busy_percent_get(dv_ind, &mut percent as *mut u32).try_err() }?;
+        unsafe {
+            self.raw
+                .rsmi_dev_busy_percent_get(dv_ind, &mut percent as *mut u32)
+                .try_err()
+        }?;
         Ok(percent)
     }
 
@@ -214,10 +220,15 @@ impl RocmSmi {
         unsafe { PerformanceCounters::get_counters(&mut self.raw, dv_ind) }
     }
 
-    pub fn get_device_performance_level(&mut self, dv_ind: u32) -> Result<PerformanceLevel, RocmErr> {
+    pub fn get_device_performance_level(
+        &mut self,
+        dv_ind: u32,
+    ) -> Result<PerformanceLevel, RocmErr> {
         unsafe {
             let mut level = PerformanceLevel::Unknown;
-            self.raw.rsmi_dev_perf_level_get(dv_ind, &mut level as *mut PerformanceLevel).try_err()?;
+            self.raw
+                .rsmi_dev_perf_level_get(dv_ind, &mut level as *mut PerformanceLevel)
+                .try_err()?;
             Ok(level)
         }
     }
@@ -252,7 +263,9 @@ impl RocmSmi {
     pub fn get_device_vbios_version(&mut self, dv_ind: u32) -> Result<String, RocmErr> {
         unsafe {
             let buff = libc::malloc(128).cast();
-            self.raw.rsmi_dev_vbios_version_get(dv_ind, buff, 128).try_err()?;
+            self.raw
+                .rsmi_dev_vbios_version_get(dv_ind, buff, 128)
+                .try_err()?;
             let temp = std::ffi::CString::from_raw(buff);
             return Ok(temp.to_string_lossy().to_string());
         }
@@ -262,25 +275,32 @@ impl RocmSmi {
     pub fn get_supported_functions(&mut self) -> Result<Vec<String>, RocmErr> {
         unsafe { get_supported_fn(&mut self.raw) }
     }
-}
 
-#[cfg(feature = "process")]
-pub fn get_compute_process_info<'a>() -> Result<&'a [RsmiProcessInfoT], RocmErr> {
-    let mut num_items = 0u32;
-    let procs = vec![].as_mut_ptr();
-    unsafe {
-        self.raw.rsmi_compute_process_info_get(procs, &mut num_items as *mut u32).try_err()?;
+    #[cfg(feature = "process")]
+    pub fn get_compute_process_info<'a>(&mut self) -> Result<&'a [RsmiProcessInfoT], RocmErr> {
+        let mut num_items = 0u32;
+        let procs = vec![].as_mut_ptr();
+        unsafe {
+            self.raw
+                .rsmi_compute_process_info_get(procs, &mut num_items as *mut u32)
+                .try_err()?;
+        }
+        Ok(unsafe { std::slice::from_raw_parts_mut(procs, num_items as usize) })
     }
-    Ok(unsafe { std::slice::from_raw_parts_mut(procs, num_items as usize) })
-}
 
-#[cfg(feature = "process")]
-pub fn get_compute_process_info_by_pid(pid: u32) -> Result<RsmiProcessInfoT, RocmErr> {
-    let mut procs = RsmiProcessInfoT::default();
-    unsafe {
-        self.raw.rsmi_compute_process_info_by_pid_get(pid, &mut procs as *mut RsmiProcessInfoT).try_err()?
-    };
-    Ok(procs)
+    #[cfg(feature = "process")]
+    pub fn get_compute_process_info_by_pid(
+        &mut self,
+        pid: u32,
+    ) -> Result<RsmiProcessInfoT, RocmErr> {
+        let mut procs = RsmiProcessInfoT::default();
+        unsafe {
+            self.raw
+                .rsmi_compute_process_info_by_pid_get(pid, &mut procs as *mut RsmiProcessInfoT)
+                .try_err()?
+        };
+        Ok(procs)
+    }
 }
 
 // pub fn rsmi_compute_process_gpus_get(pid: u32) -> Result<&[u32], RocmErr> {

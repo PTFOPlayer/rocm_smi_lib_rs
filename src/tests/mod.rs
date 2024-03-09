@@ -89,7 +89,7 @@ mod test {
         println!("identifiers: {:?}", identifiers);
         println!(
             "unique id (might fail if there is only one gpu) {:?}",
-            identifiers.get_unique_id()
+            identifiers.unique_id
         );
         println!(
             "voltage data: {:?}",
