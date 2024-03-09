@@ -4,6 +4,8 @@ use libc::{malloc, realloc};
 
 use rocm_smi_lib_sys::{error::RocmErr, RawRsmi};
 
+use crate::RocmSmi;
+
 #[derive(Debug, Clone)]
 pub struct Power<'a> {
     pub sensor_count: u32,
@@ -14,66 +16,96 @@ pub struct Power<'a> {
     pub power_cap_max_sensor: &'a [u64],
 }
 
-impl Power<'_> {
-    #[inline(always)]
-    pub(crate) unsafe fn get_power<'a>(raw: &mut RawRsmi, dv_ind: u32) -> Result<Power<'a>, RocmErr> {
+impl RocmSmi {
+    /// # Functionality
+    ///
+    /// This function returns power information for given device.
+    /// example:
+    /// ```rust,no_compile,ignore
+    /// use rocm_smi_lib::RocmSmi;
+    /// use rocm_smi_lib::error::RocmErr;
+    /// fn print_gpu_pcie_lines() -> Result<(), RocmErr> {
+    ///     let rocm = RocmSmi::init()?;
+    ///     let sensors = rocm.get_device_power_data(0)?.sensor_count;
+    ///     println!("{}", sensors);
+    ///     Ok(())
+    /// }
+    /// ```
+    /// for example for RX 7600 will print you:
+    /// ```no_compile,ignore
+    /// 1
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if `dv_ind` id not valid device identifier.
+    pub fn get_device_power_data(&mut self, dv_ind: u32) -> Result<Power, RocmErr> {
+        let raw: &mut RawRsmi = &mut self.raw;
         let mut sensor_count = 0;
-        let mut ave = malloc(size_of::<u64>()).cast();
-        let mut cap = malloc(size_of::<u64>()).cast();
-        let mut max = malloc(size_of::<u64>()).cast();
-        let mut min = malloc(size_of::<u64>()).cast();
-
-        raw.rsmi_dev_power_ave_get(dv_ind, sensor_count, ave).try_err()?;
-        raw.rsmi_dev_power_cap_get(dv_ind, sensor_count, cap).try_err()?;
-        raw.rsmi_dev_power_cap_range_get(dv_ind, sensor_count, max, min).try_err()?;
-
+        let mut ave = unsafe { malloc(size_of::<u64>()).cast() };
+        let mut cap = unsafe { malloc(size_of::<u64>()).cast() };
+        let mut max = unsafe { malloc(size_of::<u64>()).cast() };
+        let mut min = unsafe { malloc(size_of::<u64>()).cast() };
+        unsafe {
+            raw.rsmi_dev_power_ave_get(dv_ind, sensor_count, ave)
+                .try_err()?;
+            raw.rsmi_dev_power_cap_get(dv_ind, sensor_count, cap)
+                .try_err()?;
+            raw.rsmi_dev_power_cap_range_get(dv_ind, sensor_count, max, min)
+                .try_err()?;
+        }
         sensor_count += 1;
         let mut counter = sensor_count as usize + 1;
         loop {
-            ave = realloc(ave.cast(), counter * size_of::<u64>()).cast();
-            cap = realloc(cap.cast(), counter * size_of::<u64>()).cast();
-            max = realloc(max.cast(), counter * size_of::<u64>()).cast();
-            min = realloc(min.cast(), counter * size_of::<u64>()).cast();
+            unsafe {
+                ave = realloc(ave.cast(), counter * size_of::<u64>()).cast();
+                cap = realloc(cap.cast(), counter * size_of::<u64>()).cast();
+                max = realloc(max.cast(), counter * size_of::<u64>()).cast();
+                min = realloc(min.cast(), counter * size_of::<u64>()).cast();
 
-            let ret_ave = raw.rsmi_dev_power_ave_get(
-                dv_ind,
-                sensor_count,
-                ave.add(sensor_count as usize * size_of::<u64>()),
-            );
+                let ret_ave = raw.rsmi_dev_power_ave_get(
+                    dv_ind,
+                    sensor_count,
+                    ave.add(sensor_count as usize * size_of::<u64>()),
+                );
 
-            let ret_cap = raw.rsmi_dev_power_cap_get(
-                dv_ind,
-                sensor_count,
-                cap.add(sensor_count as usize * size_of::<u64>()),
-            );
+                let ret_cap = raw.rsmi_dev_power_cap_get(
+                    dv_ind,
+                    sensor_count,
+                    cap.add(sensor_count as usize * size_of::<u64>()),
+                );
 
-            let ret_rng = raw.rsmi_dev_power_cap_range_get(
-                dv_ind,
-                sensor_count,
-                max.add(sensor_count as usize * size_of::<u64>()),
-                min.add(sensor_count as usize * size_of::<u64>()),
-            );
+                let ret_rng = raw.rsmi_dev_power_cap_range_get(
+                    dv_ind,
+                    sensor_count,
+                    max.add(sensor_count as usize * size_of::<u64>()),
+                    min.add(sensor_count as usize * size_of::<u64>()),
+                );
 
-            if ret_ave != RocmErr::RsmiStatusSuccess
-                || ret_cap != RocmErr::RsmiStatusSuccess
-                || ret_rng != RocmErr::RsmiStatusSuccess
-            {
-                break;
+                if ret_ave != RocmErr::RsmiStatusSuccess
+                    || ret_cap != RocmErr::RsmiStatusSuccess
+                    || ret_rng != RocmErr::RsmiStatusSuccess
+                {
+                    break;
+                }
+                sensor_count += 1;
+                counter += 1;
             }
-            sensor_count += 1;
-            counter += 1;
         }
 
         let mut default_power_cap = 0u64;
-        raw.rsmi_dev_power_cap_default_get(dv_ind, &mut default_power_cap as *mut u64).try_err()?;
+        unsafe {
+            raw.rsmi_dev_power_cap_default_get(dv_ind, &mut default_power_cap as *mut u64)
+                .try_err()?
+        };
 
         Ok(Power {
-            sensor_count: sensor_count,
+            sensor_count,
             default_power_cap,
-            power_per_sensor: from_raw_parts(ave, sensor_count as usize),
-            power_cap_per_sensor: from_raw_parts(cap, sensor_count as usize),
-            power_cap_min_sensor: from_raw_parts(min, sensor_count as usize),
-            power_cap_max_sensor: from_raw_parts(max, sensor_count as usize),
+            power_per_sensor: unsafe { from_raw_parts(ave, sensor_count as usize) },
+            power_cap_per_sensor: unsafe { from_raw_parts(cap, sensor_count as usize) },
+            power_cap_min_sensor: unsafe { from_raw_parts(min, sensor_count as usize) },
+            power_cap_max_sensor: unsafe { from_raw_parts(max, sensor_count as usize) },
         })
     }
 }
