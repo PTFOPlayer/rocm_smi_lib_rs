@@ -1,5 +1,7 @@
 use rocm_smi_lib_sys::{error::RocmErr, RawRsmi};
 
+use crate::{MapWithString, RocmSmi};
+
 #[derive(Debug)]
 pub struct Identifiers {
     pub id: Result<u16, RocmErr>,
@@ -18,113 +20,110 @@ pub struct Identifiers {
 
 const NAME_SIZE: usize = 64;
 
-impl Identifiers {
-    #[inline(always)]
-    pub(crate) unsafe fn get_identifiers(raw: &mut RawRsmi, dv_ind: u32) -> Result<Self, RocmErr> {
+impl RocmSmi {
+    /// # Functionality
+    ///
+    /// This function returns identifiers for given device.
+    /// example:
+    /// ```rust,no_compile,ignore
+    /// use rocm_smi_lib::RocmSmi;
+    /// use rocm_smi_lib::error::RocmErr;
+    /// fn print_gpu_name() -> Result<(), RocmErr> {
+    ///     let rocm = RocmSmi::init()?;
+    ///     let name = rocm.get_device_identifiers(0)?.name;
+    ///     println!("{}", name);
+    ///     Ok(())
+    /// }
+    /// ```
+    /// for example for RX 7600 will print you:
+    /// ```no_compile,ignore
+    /// Navi 33 [Radeon RX 7700S/7600/7600S/7600M XT/PRO W7600]
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if `dv_ind` id not valid device identifier.
+    pub fn get_device_identifiers(&mut self, dv_ind: u32) -> Result<Identifiers, RocmErr> {
+        let raw: &mut RawRsmi = &mut self.raw;
         let mut id_data = 0u16;
-        let id = raw
-            .rsmi_dev_id_get(dv_ind, &mut id_data as *mut u16)
-            .try_err()
-            .map(|_| id_data);
+        let id = unsafe {
+            raw.rsmi_dev_id_get(dv_ind, &mut id_data as *mut u16)
+                .try_err()
+                .map(|_| id_data)
+        };
 
         let mut vendor_id_data = 0u16;
-        let vendor_id = raw
-            .rsmi_dev_vendor_id_get(dv_ind, &mut vendor_id_data as *mut u16)
-            .try_err()
-            .map(|_| vendor_id_data);
+        let vendor_id = unsafe {
+            raw.rsmi_dev_vendor_id_get(dv_ind, &mut vendor_id_data as *mut u16)
+                .try_err()
+                .map(|_| vendor_id_data)
+        };
 
         let mut subsystem_id_data = 0u16;
-        let subsystem_id = raw
-            .rsmi_dev_subsystem_id_get(dv_ind, &mut subsystem_id_data as *mut u16)
-            .try_err()
-            .map(|_| subsystem_id_data);
+        let subsystem_id = unsafe {
+            raw.rsmi_dev_subsystem_id_get(dv_ind, &mut subsystem_id_data as *mut u16)
+                .try_err()
+                .map(|_| subsystem_id_data)
+        };
 
         let mut drm_render_minor_data = 0u32;
-        let drm_render_minor = raw
-            .rsmi_dev_drm_render_minor_get(dv_ind, &mut drm_render_minor_data as *mut u32)
-            .try_err()
-            .map(|_| drm_render_minor_data);
+        let drm_render_minor = unsafe {
+            raw.rsmi_dev_drm_render_minor_get(dv_ind, &mut drm_render_minor_data as *mut u32)
+                .try_err()
+                .map(|_| drm_render_minor_data)
+        };
 
         let mut temp_subsystem_vendor_id = 0u16;
-        let subsystem_vendor_id = match raw
-            .rsmi_dev_subsystem_vendor_id_get(dv_ind, &mut temp_subsystem_vendor_id as *mut u16)
-            .try_err()
-        {
+        let subsystem_vendor_id = match unsafe {
+            raw.rsmi_dev_subsystem_vendor_id_get(dv_ind, &mut temp_subsystem_vendor_id as *mut u16)
+                .try_err()
+        } {
             Ok(_) => Ok(temp_subsystem_vendor_id),
             Err(err) => Err(err),
         };
 
         let mut unique_id_data = 0u64;
-        let unique_id = raw
-            .rsmi_dev_unique_id_get(dv_ind, &mut unique_id_data as *mut u64)
-            .try_err()
-            .map(|_| unique_id_data);
+        let unique_id = unsafe {
+            raw.rsmi_dev_unique_id_get(dv_ind, &mut unique_id_data as *mut u64)
+                .try_err()
+                .map(|_| unique_id_data)
+        };
 
-        let name = {
+        let name = unsafe {
             let buff = libc::malloc(NAME_SIZE).cast();
             raw.rsmi_dev_name_get(dv_ind, buff, NAME_SIZE)
-                .try_err()
-                .map(|_| {
-                    std::ffi::CString::from_raw(buff)
-                        .to_string_lossy()
-                        .to_string()
-                })
+                .map_with_buff(buff)
         };
 
-        let brand = {
+        let brand = unsafe {
             let buff = libc::malloc(NAME_SIZE).cast();
             raw.rsmi_dev_brand_get(dv_ind, buff, NAME_SIZE)
-                .try_err()
-                .map(|_| {
-                    std::ffi::CString::from_raw(buff)
-                        .to_string_lossy()
-                        .to_string()
-                })
+                .map_with_buff(buff)
         };
 
-        let vendor_name = {
+        let vendor_name = unsafe {
             let buff = libc::malloc(NAME_SIZE).cast();
             raw.rsmi_dev_vendor_name_get(dv_ind, buff, NAME_SIZE)
-                .try_err()
-                .map(|_| {
-                    std::ffi::CString::from_raw(buff)
-                        .to_string_lossy()
-                        .to_string()
-                })
+                .map_with_buff(buff)
         };
-        let vram_vendor_name = {
+        let vram_vendor_name = unsafe {
             let buff = libc::malloc(NAME_SIZE).cast();
             raw.rsmi_dev_vram_vendor_get(dv_ind, buff, NAME_SIZE)
-                .try_err()
-                .map(|_| {
-                    std::ffi::CString::from_raw(buff)
-                        .to_string_lossy()
-                        .to_string()
-                })
+                .map_with_buff(buff)
         };
-        let serial_number = {
+        let serial_number = unsafe {
             let buff = libc::malloc(NAME_SIZE).cast();
             raw.rsmi_dev_serial_number_get(dv_ind, buff, NAME_SIZE)
-                .try_err()
-                .map(|_| {
-                    std::ffi::CString::from_raw(buff)
-                        .to_string_lossy()
-                        .to_string()
-                })
+                .map_with_buff(buff)
         };
 
-        let subsystem_name = {
+        let subsystem_name = unsafe {
             let buff = libc::malloc(NAME_SIZE).cast();
             raw.rsmi_dev_subsystem_name_get(dv_ind, buff, NAME_SIZE)
-                .try_err()
-                .map(|_| {
-                    std::ffi::CString::from_raw(buff)
-                        .to_string_lossy()
-                        .to_string()
-                })
+                .map_with_buff(buff)
         };
 
-        Ok(Self {
+        Ok(Identifiers {
             id,
             name,
             vendor_id,

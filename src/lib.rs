@@ -4,14 +4,11 @@ use rocm_smi_lib_sys::{bindings::*, error::RocmErr, RawRsmi};
 
 use queries::{
     error::EccData,
-    identifiers::Identifiers,
     memory::Memory,
-    pcie::Pcie,
     performance::{
         get_metrics, Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters,
     },
     physical::Fans,
-    power::Power,
 };
 mod tests;
 
@@ -82,83 +79,6 @@ impl RocmSmi {
     /// This function returns device count, last valid device identifier is equal to device cound - 1.
     pub fn get_device_count(&mut self) -> u32 {
         self.device_count
-    }
-    /// # Functionality
-    ///
-    /// This function returns identifiers for given device.
-    /// example:
-    /// ```rust,no_compile,ignore
-    /// use rocm_smi_lib::RocmSmi;
-    /// use rocm_smi_lib::error::RocmErr;
-    /// fn print_gpu_name() -> Result<(), RocmErr> {
-    ///     let rocm = RocmSmi::init()?;
-    ///     let name = rocm.get_device_identifiers(0)?.name;
-    ///     println!("{}", name);
-    ///     Ok(())
-    /// }
-    /// ```
-    /// for example for RX 7600 will print you:
-    /// ```no_compile,ignore
-    /// Navi 33 [Radeon RX 7700S/7600/7600S/7600M XT/PRO W7600]
-    /// ```
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if `dv_ind` id not valid device identifier.
-    pub fn get_device_identifiers(&mut self, dv_ind: u32) -> Result<Identifiers, RocmErr> {
-        unsafe { Identifiers::get_identifiers(&mut self.raw, dv_ind) }
-    }
-
-    /// # Functionality
-    ///
-    /// This function returns pcie information for given device.
-    /// example:
-    /// ```rust,no_compile,ignore
-    /// use rocm_smi_lib::RocmSmi;
-    /// use rocm_smi_lib::error::RocmErr;
-    /// fn print_gpu_pcie_lines() -> Result<(), RocmErr> {
-    ///     let rocm = RocmSmi::init()?;
-    ///     let lines = rocm.get_device_pcie_data(0)?.get_bandwidth_and_throughput().lines;
-    ///     println!("{}", lines);
-    ///     Ok(())
-    /// }
-    /// ```
-    /// for example for RX 7600 will print you:
-    /// ```no_compile,ignore
-    /// 8
-    /// ```
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if `dv_ind` id not valid device identifier.
-    pub fn get_device_pcie_data<'a>(&mut self, dv_ind: u32) -> Result<Pcie, RocmErr> {
-        Pcie::get_pcie(&mut self.raw, dv_ind)
-    }
-
-    /// # Functionality
-    ///
-    /// This function returns power information for given device.
-    /// example:
-    /// ```rust,no_compile,ignore
-    /// use rocm_smi_lib::RocmSmi;
-    /// use rocm_smi_lib::error::RocmErr;
-    /// fn print_gpu_pcie_lines() -> Result<(), RocmErr> {
-    ///     let rocm = RocmSmi::init()?;
-    ///     let sensors = rocm.get_device_power_data(0)?.sensor_count;
-    ///     println!("{}", sensors);
-    ///     Ok(())
-    /// }
-    /// ```
-    /// for example for RX 7600 will print you:
-    /// ```no_compile,ignore
-    /// 1
-    /// ```
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if `dv_ind` id not valid device identifier.
-    pub fn get_device_power_data(&mut self, dv_ind: u32) -> Result<Power, RocmErr> {
-        unsafe { Power::get_power(&mut self.raw, dv_ind) }
     }
 
     pub fn get_device_memory_data(&mut self, dv_ind: u32) -> Result<Memory, RocmErr> {
@@ -307,3 +227,18 @@ impl RocmSmi {
 //     let mut indices = vec![].as_mut_ptr();
 //     let mut num_devices = 0u32;
 // }
+
+
+pub(crate) trait MapWithString {
+    unsafe fn map_with_buff(&self, buff: *mut i8) -> Result<String, RocmErr>;
+}
+
+impl MapWithString for RocmErr {
+    unsafe fn map_with_buff(&self, buff: *mut i8) -> Result<String, RocmErr> {
+        self.try_err().map(|_| {
+            std::ffi::CString::from_raw(buff)
+                .to_string_lossy()
+                .to_string()
+        })
+    }
+}
