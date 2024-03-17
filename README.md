@@ -21,15 +21,15 @@ sudo pacman -S rocm-smi-lib rocm-smi
 
 Create file named `/etc/yum.repos.d/rocm.repo` and write it with:
 ```
-[ROCm-5.5.3]
-name=ROCm5.5.3
-baseurl=https://repo.radeon.com/rocm/rhel9/5.5.3/main
+[ROCm-6.0.2]
+name=ROCm6.0.2
+baseurl=https://repo.radeon.com/rocm/rhel9/6.0.2/main
 enabled=1
 priority=50
 gpgcheck=1
 gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
 ```
-> For suse change file path to /etc/zypp/repos.d/rocm.repo `baseurl` to `https://repo.radeon.com/rocm/zyp/5.5.3/main` 
+> For suse change file path to /etc/zypp/repos.d/rocm.repo `baseurl` to `https://repo.radeon.com/rocm/zyp/6.0.2/main` 
 
 Then run 
 On Fedora:
@@ -49,7 +49,7 @@ sudo zypper install rocblas rocm-smi-lib
 
 Run commands:
 ```
-echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/5.5.3 focal main" \
+echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/6.0.2 focal main" \
     | sudo tee --append /etc/apt/sources.list.d/rocm.list
 
 echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' \
@@ -61,7 +61,7 @@ sudo apt install rocm-dkms rocm-dev rocm-smi-lib
 ```
 
 ## Other
-For other check out [How to install ROCM](https://docs.amd.com/en/docs-5.3.0/deploy/linux/os-native/install.html)
+For other check out [How to install ROCM](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/how-to/native-install/index.html)
 
 # Usage / Examples
 
