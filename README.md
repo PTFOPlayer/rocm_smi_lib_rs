@@ -1,4 +1,4 @@
-# rocm_lib
+# rocm_smi_lib_rs
 Crate bringing support for rocm-smi liblary from C
 
 # Instalation
