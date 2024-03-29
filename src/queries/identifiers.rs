@@ -5,8 +5,9 @@ use crate::{MapWithString, RocmSmi};
 #[derive(Debug)]
 pub struct Identifiers {
     pub id: Result<u16, RocmErr>,
-    pub name: Result<String, RocmErr>,
+    pub revision: Result<u16, RocmErr>,
     pub vendor_id: Result<u16, RocmErr>,
+    pub name: Result<String, RocmErr>,
     pub brand: Result<String, RocmErr>,
     pub vendor_name: Result<String, RocmErr>,
     pub vram_vendor_name: Result<String, RocmErr>,
@@ -16,6 +17,7 @@ pub struct Identifiers {
     pub drm_render_minor: Result<u32, RocmErr>,
     pub subsystem_vendor_id: Result<u16, RocmErr>,
     pub unique_id: Result<u64, RocmErr>,
+    pub xgmi_physical_id: Result<u16, RocmErr>,
 }
 
 const NAME_SIZE: usize = 64;
@@ -52,6 +54,13 @@ impl RocmSmi {
                 .map(|_| id_data)
         };
 
+        let mut revision_data = 0u16;
+        let revision = unsafe {
+            raw.rsmi_dev_revision_get(dv_ind, &mut revision_data as *mut u16)
+                .try_err()
+                .map(|_| revision_data)
+        };
+
         let mut vendor_id_data = 0u16;
         let vendor_id = unsafe {
             raw.rsmi_dev_vendor_id_get(dv_ind, &mut vendor_id_data as *mut u16)
@@ -74,12 +83,10 @@ impl RocmSmi {
         };
 
         let mut temp_subsystem_vendor_id = 0u16;
-        let subsystem_vendor_id = match unsafe {
+        let subsystem_vendor_id = unsafe {
             raw.rsmi_dev_subsystem_vendor_id_get(dv_ind, &mut temp_subsystem_vendor_id as *mut u16)
                 .try_err()
-        } {
-            Ok(_) => Ok(temp_subsystem_vendor_id),
-            Err(err) => Err(err),
+                .map(|_| temp_subsystem_vendor_id)
         };
 
         let mut unique_id_data = 0u64;
@@ -123,8 +130,16 @@ impl RocmSmi {
                 .map_with_buff(buff)
         };
 
+        let mut xgmi_physical_id_data = 0u16;
+        let xgmi_physical_id = unsafe {
+            raw.rsmi_dev_xgmi_physical_id_get(dv_ind, &mut xgmi_physical_id_data as *mut u16)
+                .try_err()
+                .map(|_| xgmi_physical_id_data)
+        };
+
         Ok(Identifiers {
             id,
+            revision,
             name,
             vendor_id,
             brand,
@@ -136,6 +151,7 @@ impl RocmSmi {
             drm_render_minor,
             subsystem_vendor_id,
             unique_id,
+            xgmi_physical_id,
         })
     }
 }

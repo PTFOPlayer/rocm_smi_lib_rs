@@ -13,6 +13,16 @@ mod test {
 
     #[test]
     #[cfg(feature = "device")]
+    fn identifers_test() -> Result<(), RocmErr> {
+        let mut res = RocmSmi::init()?.into_first_device()?;
+        println!("{}", res.id);
+        let identifiers = res.get_identifiers()?;
+        println!("identifiers: {:?}", identifiers);
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "device")]
     fn pcie_test() -> Result<(), RocmErr> {
         let mut res = RocmSmi::init()?.into_first_device()?;
         println!("pcie data: {:?}", res.get_pcie_data());
@@ -81,20 +91,23 @@ mod test {
 
     #[cfg(feature = "device")]
     #[test]
-    fn main_test() -> Result<(), RocmErr> {
+    fn voltage_test() -> Result<(), RocmErr> {
         let mut res = RocmSmi::init()?.into_first_device()?;
         println!("{}", res.id);
-        let identifiers = res.get_identifiers()?;
-        std::thread::sleep(Duration::from_secs_f32(0.5));
-        println!("identifiers: {:?}", identifiers);
-        println!(
-            "unique id (might fail if there is only one gpu) {:?}",
-            identifiers.unique_id
-        );
         println!(
             "voltage data: {:?}",
             res.get_voltage_metric(RsmiVoltageMetric::RsmiVoltCurrent)
         );
+        Ok(())
+    }
+
+    #[cfg(feature = "device")]
+    #[test]
+    fn main_test() -> Result<(), RocmErr> {
+        let mut res = RocmSmi::init()?.into_first_device()?;
+        println!("{}", res.id);
+        let identifiers = res.get_identifiers()?;
+        std::thread::sleep(Duration::from_secs_f32(2.));
         println!("busy percent: {:?}", res.get_busy_percent());
         println!("perf counters: {:?}", res.get_performance_countes());
         println!("perf level: {:?}", res.get_performance_level());
@@ -104,7 +117,8 @@ mod test {
             res.get_frequency(RsmiClkType::RsmiClkTypeDf)
         );
         println!("f-v curve: {:?}", res.get_frequency_voltage_curve());
-        println!("metrics: {:?}", res.get_full_metrics());
+        // until further fixes in sys liblary
+        // println!("metrics: {:?}", res.get_full_metrics());
         println!("ecc: {:?}", res.get_ecc_data());
         println!("vbios: {:?}", res.get_vbios_version());
 

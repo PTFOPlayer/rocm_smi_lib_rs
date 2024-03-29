@@ -38,11 +38,11 @@ sudo dnf install rocm-smi rocm-smi-devel rocm-smi-lib
 ```
 On RHEL:
 ```
-sudo yum install --nogpgcheck rocblas rocm-smi-lib
+sudo yum install --nogpgcheck rocm-smi-lib
 ```
 On Suse:
 ```
-sudo zypper install rocblas rocm-smi-lib
+sudo zypper install rocm-smi-lib
 ```
 
 ## Ubuntu 
@@ -84,3 +84,10 @@ fn print_gpu_name() -> Result<(), RocmErr> {
     Ok(())
 }    
 ```
+
+# RC versions
+Please consider testing rc versions and report bugs in them, api is large and it takes a lot of time to test everything alone on many GPU's.
+
+# TODO
+- [ ] fix `get_full_metrics()`
+- [ ] setters (it will not be done until i have som testing crew and/or figure out automatic tests across different gpu's)
