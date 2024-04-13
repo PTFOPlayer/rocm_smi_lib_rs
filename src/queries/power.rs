@@ -2,7 +2,7 @@ use std::{mem::size_of, slice::from_raw_parts};
 
 use libc::{malloc, realloc};
 
-use rocm_smi_lib_sys::{error::RocmErr, RawRsmi};
+use rocm_smi_lib_sys::{bindings::RsmiPowerProfileStatus, error::RocmErr, RawRsmi};
 
 use crate::RocmSmi;
 
@@ -10,10 +10,12 @@ use crate::RocmSmi;
 pub struct Power<'a> {
     pub sensor_count: u32,
     pub default_power_cap: u64,
+    pub current_power: u64,
     pub power_per_sensor: &'a [u64],
     pub power_cap_per_sensor: &'a [u64],
     pub power_cap_min_sensor: &'a [u64],
     pub power_cap_max_sensor: &'a [u64],
+    pub power_profile_preset: RsmiPowerProfileStatus
 }
 
 impl RocmSmi {
@@ -93,19 +95,25 @@ impl RocmSmi {
             }
         }
 
+        let mut current_power = 0u64;
         let mut default_power_cap = 0u64;
+        let power_profile_preset: *mut RsmiPowerProfileStatus = std::ptr::null_mut();
         unsafe {
+            raw.rsmi_dev_current_socket_power_get(dv_ind, &mut current_power as *mut u64).try_err()? ;
             raw.rsmi_dev_power_cap_default_get(dv_ind, &mut default_power_cap as *mut u64)
-                .try_err()?
+                .try_err()?;
+            raw.rsmi_dev_power_profile_presets_get(dv_ind, 0, power_profile_preset).try_err()?
         };
 
         Ok(Power {
             sensor_count,
             default_power_cap,
+            current_power,
             power_per_sensor: unsafe { from_raw_parts(ave, sensor_count as usize) },
             power_cap_per_sensor: unsafe { from_raw_parts(cap, sensor_count as usize) },
             power_cap_min_sensor: unsafe { from_raw_parts(min, sensor_count as usize) },
             power_cap_max_sensor: unsafe { from_raw_parts(max, sensor_count as usize) },
+            power_profile_preset: unsafe { (*power_profile_preset).clone() },
         })
     }
 }

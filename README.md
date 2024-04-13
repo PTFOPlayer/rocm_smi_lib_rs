@@ -1,6 +1,11 @@
 # rocm_smi_lib_rs
 Crate bringing support for rocm-smi liblary from C
 
+# Compatibility 
+| Crate version | Rocm version |
+| ------------- | ------------ |
+| <2.0          | <6.0         |
+| 2.1 - 2.2     | 6.0-6.2      |
 # Instalation
 
 ```
