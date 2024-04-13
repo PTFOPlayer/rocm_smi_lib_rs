@@ -59,9 +59,9 @@ dependencies = [
 
 [[package]]
 name = "rocm_smi_lib_sys"
-version = "0.2.2-rc1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "833294b0139631f1af190562ecb81fe7b0c30ebecd118333acf817ac43d770b3"
+checksum = "d06c3d423496c212ae89d654bbf77b2641da8ccc1a0fa20abbac95d6bb3786ee"
 dependencies = [
  "cmake",
  "libc",

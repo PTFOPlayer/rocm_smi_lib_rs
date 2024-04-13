@@ -172,7 +172,7 @@ impl RocmSmi {
         unsafe { FrequencyVoltageCurv::get_curve(&mut self.raw, dv_ind) }
     }
 
-    pub fn get_device_full_metrics(&mut self, dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
+    pub fn get_device_full_metrics(&mut self, dv_ind: u32) -> Result<RsmiGpuMetrics, RocmErr> {
         unsafe { get_metrics(&mut self.raw, dv_ind) }
     }
 

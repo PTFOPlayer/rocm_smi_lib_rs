@@ -4,7 +4,7 @@ use rocm_smi_lib_sys::{
 };
 
 pub use rocm_smi_lib_sys::bindings::{
-    GpuMetrics, RsmiClkType, RsmiFrequencies, RsmiOdVddcPoint, RsmiOdVoltFreqData, RsmiRange,
+    RsmiGpuMetrics, RsmiClkType, RsmiFrequencies, RsmiOdVddcPoint, RsmiOdVoltFreqData, RsmiRange,
     RsmiUtilizationCounter, RsmiUtilizationCounterType,
 };
 
@@ -98,8 +98,8 @@ impl FrequencyVoltageCurv {
     }
 }
 
-pub(crate) unsafe fn get_metrics(raw: &mut RawRsmi, dv_ind: u32) -> Result<GpuMetrics, RocmErr> {
-    let mut metrics: GpuMetrics = GpuMetrics::default();
-    raw.rsmi_dev_gpu_metrics_info_get(dv_ind, &mut metrics as *mut GpuMetrics).try_err()?;
+pub(crate) unsafe fn get_metrics(raw: &mut RawRsmi, dv_ind: u32) -> Result<RsmiGpuMetrics, RocmErr> {
+    let mut metrics: RsmiGpuMetrics = RsmiGpuMetrics::default();
+    raw.rsmi_dev_gpu_metrics_info_get(dv_ind, &mut metrics as *mut RsmiGpuMetrics).try_err()?;
     Ok(metrics)
 }
