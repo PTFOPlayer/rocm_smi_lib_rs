@@ -106,7 +106,6 @@ mod test {
     fn main_test() -> Result<(), RocmErr> {
         let mut res = RocmSmi::init()?.into_first_device()?;
         println!("{}", res.id);
-        let identifiers = res.get_identifiers()?;
         std::thread::sleep(Duration::from_secs_f32(2.));
         println!("busy percent: {:?}", res.get_busy_percent());
         println!("perf counters: {:?}", res.get_performance_countes());
