@@ -85,7 +85,7 @@ impl RocmSmiDevice {
         self.rocm.get_device_frequency_voltage_curve(self.id)
     }
 
-    pub fn get_full_metrics(&mut self) -> Result<GpuMetrics, RocmErr> {
+    pub fn get_full_metrics(&mut self) -> Result<RsmiGpuMetrics, RocmErr> {
         self.rocm.get_device_full_metrics(self.id)
     }
 
