@@ -1,6 +1,6 @@
 [package]
 name = "rocm_smi_lib"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["WhiskyAKM"]
@@ -15,9 +15,9 @@ exclude = [
 ]
 
 [dependencies]
-lazy_static = "1.4.0"
-libc = "0.2.147"
-rocm_smi_lib_sys = "0.2.2"
+lazy_static = "1.5.0"
+libc = "0.2.158"
+rocm_smi_lib_sys = "0.2.3"
 
 [profile.dev]
 opt-level = 1

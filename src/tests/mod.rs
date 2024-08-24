@@ -15,11 +15,20 @@ mod test {
     #[cfg(feature = "device")]
     fn identifers_test() -> Result<(), RocmErr> {
         let mut res = RocmSmi::init()?.into_first_device()?;
-        println!("{}", res.id);
         let identifiers = res.get_identifiers()?;
         println!("identifiers: {:?}", identifiers);
         Ok(())
     }
+
+    #[test]
+    #[cfg(feature = "device")]
+    fn full_metrics_test() -> Result<(), RocmErr> {
+        let mut res = RocmSmi::init()?.into_first_device()?;
+        let metrics = res.get_full_metrics()?;
+        println!("metrics: {:?}", metrics);
+        Ok(())
+    }
+
 
     #[test]
     #[cfg(feature = "device")]
@@ -70,7 +79,7 @@ mod test {
         println!(
             "memory temperature data: {:?}",
             res.get_temperature_metric(
-                RsmiTemperatureSensor::RsmiTempTypeEdge,
+                RsmiTemperatureSensor::RsmiTempTypeMemory,
                 RsmiTemperatureMetric::RsmiTempCurrent,
             )
         );

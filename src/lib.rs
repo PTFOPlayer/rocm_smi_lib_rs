@@ -81,14 +81,35 @@ impl RocmSmi {
         self.device_count
     }
 
+    /// #  Functionality
+    /// 
+    /// This function returns info about memory ammount and its utilization for given device.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if provided `id` is not valid device identifier.
     pub fn get_device_memory_data(&mut self, dv_ind: u32) -> Result<Memory, RocmErr> {
         unsafe { Memory::get_memory(&mut self.raw, dv_ind) }
     }
 
+    /// #  Functionality
+    /// 
+    /// This function returns info about fans speed.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if provided `id` is not valid device identifier.
     pub fn get_device_fans_data(&mut self, dv_ind: u32) -> Result<Fans, RocmErr> {
         unsafe { Fans::get_fans(&mut self.raw, dv_ind) }
     }
 
+    /// #  Functionality
+    /// 
+    /// This function returns info about temperature at selected sensor.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if provided `id` is not valid device identifier, or if sensor or temperature metric is not available.
     pub fn get_device_temperature_metric(
         &mut self,
         dv_ind: u32,
@@ -104,6 +125,13 @@ impl RocmSmi {
         Ok(temp as f64 / 1000.)
     }
 
+    /// #  Functionality
+    /// 
+    /// This function returns info about voltage.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if provided `id` is not valid device identifier, or if data for given metric is not available.
     pub fn get_device_voltage_metric(
         &mut self,
         dv_ind: u32,
@@ -122,7 +150,14 @@ impl RocmSmi {
         }?;
         Ok(volt as f64 / 1000.)
     }
-
+    
+    /// #  Functionality
+    /// 
+    /// Returns ammount of time GPU is busy doing any processing.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if provided `id` is not valid device identifier,.
     pub fn get_device_busy_percent(&mut self, dv_ind: u32) -> Result<u32, RocmErr> {
         let mut percent = 0u32;
         unsafe {
