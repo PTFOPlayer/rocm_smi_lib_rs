@@ -4,7 +4,7 @@ use crate::RocmSmi;
 #[derive(Debug)]
 pub struct Pcie {
     pub id: u64,
-    pub associated_numa_node: u32,
+    pub associated_numa_node: i32,
     pub current_index: u32,
     pub lanes: Vec<u32>,
     pub frequency: Vec<u64>,
@@ -25,7 +25,7 @@ pub struct PcieBandwidthAndThroughput {
 #[derive(Debug, Clone, Copy)]
 pub struct PcieIdentifiers {
     pub id: u64,
-    pub associated_numa_node: u32,
+    pub associated_numa_node: i32,
 }
 
 impl RocmSmi {
@@ -58,7 +58,7 @@ impl RocmSmi {
 
         let mut id = 0u64;
 
-        let mut numa = 0u32;
+        let mut numa = 0i32;
 
         let mut pkg_sent = 0u64;
         let mut pkg_recived = 0u64;
@@ -69,7 +69,7 @@ impl RocmSmi {
                 .try_err()?;
             raw.rsmi_dev_pci_id_get(dv_ind, &mut id as *mut u64)
                 .try_err()?;
-            raw.rsmi_topo_numa_affinity_get(dv_ind, &mut numa as *mut u32);
+            raw.rsmi_topo_numa_affinity_get(dv_ind, &mut numa as *mut i32);
             raw.rsmi_dev_pci_throughput_get(
                 dv_ind,
                 &mut pkg_sent as *mut u64,

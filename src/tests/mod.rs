@@ -37,6 +37,16 @@ mod test {
         println!("pcie data: {:?}", res.get_pcie_data());
         Ok(())
     }
+
+    #[test]
+    #[cfg(feature = "device")]
+    fn topo_test() -> Result<(), RocmErr> {
+        let mut res = RocmSmi::init()?.into_first_device()?;
+
+        println!("numa node: {:?}", res.get_topo_numa_node_number());
+
+        Ok(())
+    }
     #[test]
     #[cfg(feature = "device")]
     fn pwr_test() -> Result<(), RocmErr> {
