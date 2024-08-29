@@ -105,4 +105,8 @@ impl RocmSmiDevice {
     pub fn get_rsmi_version(&mut self) -> Result<String, RocmErr> {
         self.rocm.get_rsmi_version()
     }
+
+    pub fn get_topo_numa_node_number(&mut self) -> Result<u32, RocmErr> {
+        self.rocm.get_device_topo_numa_node_number(self.id)
+    }
 }
