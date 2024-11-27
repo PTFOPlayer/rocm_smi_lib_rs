@@ -41,9 +41,9 @@ dependencies = [
 
 [[package]]
 name = "rocm_smi_lib_sys"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d196f673222ec88c9a4e1ba3a8b0008866249159d326e7fc30b554eb6f4ac859"
+checksum = "c0b3fa4a7732c9acf005c25f679e03a8d2e7ce4589175002de1affe0d50976f7"
 dependencies = [
  "libc",
  "libloading",
