@@ -6,7 +6,7 @@ Crate bringing support for rocm-smi liblary from C
 | ------------- | ------------- |
 | <2.0          | <6.0          |
 | 2.1 - 2.2     | PROVEN BROKEN |
-| 2.3           | 6.0-6.2       |
+| 2.3           | 6.0-6.3       |
 
 # Requirements
 
@@ -37,6 +37,20 @@ fn print_gpu_name() -> Result<(), RocmErr> {
 
 # RC versions
 Please consider testing rc versions and report bugs in them, api is large and it takes a lot of time to test everything alone on many GPU's.
+
+
+## Tested hardware:
+- RX 7600
+- RX 7600XT
+- RX 6950XT
+- RX 5700XT
+- RX Vega 7 (mobile)
+- RX 470
+
+## Developed on hardware:
+- RX 7600
+- RX 5700XT
+- RX 470
 
 # TODO
 - [ ] setters (it will not be done until i have som testing crew and/or figure out automatic tests across different gpu's)
