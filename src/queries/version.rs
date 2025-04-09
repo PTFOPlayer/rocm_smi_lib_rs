@@ -1,8 +1,13 @@
 use std::ptr::null;
 
-use rocm_smi_lib_sys::{bindings::RsmiVersion, error::RocmErr};
+use rocm_smi_lib_sys::bindings::{rsmi_version_get, rsmi_version_t};
 
-use crate::RocmSmi;
+use crate::{
+    error::{IntoRocmErr, RocmErr},
+    RocmSmi,
+};
+
+pub type RsmiVersion = rsmi_version_t;
 
 impl RocmSmi {
     pub fn get_rsmi_version(&mut self) -> Result<String, RocmErr> {
@@ -12,11 +17,10 @@ impl RocmSmi {
             patch: 0,
             build: null::<i8>() as *mut i8,
         };
+        
 
         unsafe {
-            self.raw
-                .rsmi_version_get(&mut v as *mut RsmiVersion)
-                .try_err()?;
+            rsmi_version_get(&mut v as *mut RsmiVersion).into_rocm_err()?;
         }
         Ok(format!(
             "version: {}.{}, patch: {}",

@@ -1,17 +1,15 @@
-use rocm_smi_lib_sys::{error::RocmErr, bindings::*};
+use rocm_smi_lib_sys::bindings::*;
 
 use crate::{
     queries::{
+        error::EccData,
         identifiers::Identifiers,
         memory::Memory,
         pcie::Pcie,
-        performance::{
-            Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters,
-        },
+        performance::{Frequency, FrequencyVoltageCurv, OverdriveLevels, PerformanceCounters},
         physical::Fans,
-        power::Power, error::EccData,
-    },
-    RocmSmi,
+        power::Power,
+    }, RocmErr, RocmSmi, RsmiClkType, RsmiDevPerfLevel, RsmiTemperatureMetric, RsmiTemperatureType, RsmiVoltageMetric
 };
 
 pub struct RocmSmiDevice {
@@ -50,7 +48,7 @@ impl RocmSmiDevice {
 
     pub fn get_temperature_metric(
         &mut self,
-        sensor: RsmiTemperatureSensor,
+        sensor: RsmiTemperatureType,
         metric: RsmiTemperatureMetric,
     ) -> Result<f64, RocmErr> {
         self.rocm
@@ -69,7 +67,7 @@ impl RocmSmiDevice {
         self.rocm.get_device_performance_countes(self.id)
     }
 
-    pub fn get_performance_level(&mut self) -> Result<PerformanceLevel, RocmErr> {
+    pub fn get_performance_level(&mut self) -> Result<RsmiDevPerfLevel, RocmErr> {
         self.rocm.get_device_performance_level(self.id)
     }
 
@@ -85,7 +83,7 @@ impl RocmSmiDevice {
         self.rocm.get_device_frequency_voltage_curve(self.id)
     }
 
-    pub fn get_full_metrics(&mut self) -> Result<RsmiGpuMetrics, RocmErr> {
+    pub fn get_full_metrics(&mut self) -> Result<rsmi_gpu_metrics_t, RocmErr> {
         self.rocm.get_device_full_metrics(self.id)
     }
 
@@ -96,11 +94,11 @@ impl RocmSmiDevice {
     pub fn get_vbios_version(&mut self) -> Result<String, RocmErr> {
         self.rocm.get_device_vbios_version(self.id)
     }
-    
-    #[cfg(feature = "fn_query")]
-    pub fn get_supported_functions(&mut self) -> Result<Vec<String>, RocmErr> {
-        self.rocm.get_supported_functions()
-    }
+
+    // #[cfg(feature = "fn_query")]
+    // pub fn get_supported_functions(&mut self) -> Result<Vec<String>, RocmErr> {
+    //     self.rocm.get_supported_functions()
+    // }
 
     pub fn get_rsmi_version(&mut self) -> Result<String, RocmErr> {
         self.rocm.get_rsmi_version()

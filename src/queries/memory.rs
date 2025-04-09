@@ -1,6 +1,6 @@
-use rocm_smi_lib_sys::{error::RocmErr, RawRsmi};
+use crate::error::{IntoRocmErr, RocmErr};
 
-pub use rocm_smi_lib_sys::bindings::RsmiMemoryType;
+use rocm_smi_lib_sys::bindings::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct MemoryTotal {
@@ -28,54 +28,50 @@ pub struct Memory {
 }
 
 impl Memory {
-    pub(crate) unsafe fn get_memory(raw: &mut RawRsmi,dv_ind: u32) -> Result<Memory, RocmErr> {
+    pub(crate) unsafe fn get_memory(dv_ind: u32) -> Result<Memory, RocmErr> {
         let mut vram_total = 0u64;
         let mut vram_used = 0u64;
-        raw.rsmi_dev_memory_total_get(
+        rsmi_dev_memory_total_get(
             dv_ind,
-            RsmiMemoryType::RsmiMemTypeVram,
+            rsmi_memory_type_t_RSMI_MEM_TYPE_VRAM,
             &mut vram_total as *mut u64,
-        )
-        .try_err()?;
-        raw.rsmi_dev_memory_usage_get(
+        ).into_rocm_err()?;
+        rsmi_dev_memory_usage_get(
             dv_ind,
-            RsmiMemoryType::RsmiMemTypeVram,
+            rsmi_memory_type_t_RSMI_MEM_TYPE_VRAM,
             &mut vram_used as *mut u64,
-        )
-        .try_err()?;
+        ).into_rocm_err()?;
 
         let mut vis_vram_total = 0u64;
         let mut vis_vram_used = 0u64;
-        raw.rsmi_dev_memory_total_get(
+        rsmi_dev_memory_total_get(
             dv_ind,
-            RsmiMemoryType::RsmiMemTypeVisVram,
+            rsmi_memory_type_t_RSMI_MEM_TYPE_VIS_VRAM,
             &mut vis_vram_total as *mut u64,
-        )
-        .try_err()?;
-        raw.rsmi_dev_memory_usage_get(
+        ).into_rocm_err()?;
+        rsmi_dev_memory_usage_get(
             dv_ind,
-            RsmiMemoryType::RsmiMemTypeVisVram,
+            rsmi_memory_type_t_RSMI_MEM_TYPE_VIS_VRAM,
             &mut vis_vram_used as *mut u64,
-        )
-        .try_err()?;
+        ).into_rocm_err()?;
 
         let mut gtt_total = 0u64;
         let mut gtt_used = 0u64;
-        raw.rsmi_dev_memory_total_get(
+        rsmi_dev_memory_total_get(
             dv_ind,
-            RsmiMemoryType::RsmiMemTypeGtt,
+            rsmi_memory_type_t_RSMI_MEM_TYPE_GTT,
             &mut gtt_total as *mut u64,
         )
-        .try_err()?;
-        raw.rsmi_dev_memory_usage_get(
+        .into_rocm_err()?;
+        rsmi_dev_memory_usage_get(
             dv_ind,
-            RsmiMemoryType::RsmiMemTypeGtt,
+            rsmi_memory_type_t_RSMI_MEM_TYPE_GTT,
             &mut gtt_used as *mut u64,
         )
-        .try_err()?;
+        .into_rocm_err()?;
 
         let mut busy_percent = 0u32;
-        raw.rsmi_dev_memory_busy_percent_get(dv_ind, &mut busy_percent as *mut u32).try_err()?;
+        rsmi_dev_memory_busy_percent_get(dv_ind, &mut busy_percent as *mut u32).into_rocm_err()?;
 
         Ok(Memory {
             busy_percent,
