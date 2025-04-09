@@ -2,9 +2,14 @@ use std::{mem::size_of, slice::from_raw_parts};
 
 use libc::{malloc, realloc};
 
-use rocm_smi_lib_sys::{bindings::RsmiPowerProfileStatus, error::RocmErr, RawRsmi};
+use rocm_smi_lib_sys::bindings::*;
 
-use crate::RocmSmi;
+use crate::{
+    error::{IntoRocmErr, RocmErr},
+    RocmSmi,
+};
+
+pub type RsmiPowerProfileStatus = rsmi_power_profile_status_t;
 
 #[derive(Debug, Clone)]
 pub struct Power<'a> {
@@ -15,7 +20,7 @@ pub struct Power<'a> {
     pub power_cap_per_sensor: &'a [u64],
     pub power_cap_min_sensor: &'a [u64],
     pub power_cap_max_sensor: &'a [u64],
-    pub power_profile_preset: RsmiPowerProfileStatus
+    pub power_profile_preset: RsmiPowerProfileStatus,
 }
 
 impl RocmSmi {
@@ -42,19 +47,15 @@ impl RocmSmi {
     ///
     /// This function will return an error if `dv_ind` id not valid device identifier.
     pub fn get_device_power_data(&mut self, dv_ind: u32) -> Result<Power, RocmErr> {
-        let raw: &mut RawRsmi = &mut self.raw;
         let mut sensor_count = 0;
         let mut ave = unsafe { malloc(size_of::<u64>()).cast() };
         let mut cap = unsafe { malloc(size_of::<u64>()).cast() };
         let mut max = unsafe { malloc(size_of::<u64>()).cast() };
         let mut min = unsafe { malloc(size_of::<u64>()).cast() };
         unsafe {
-            raw.rsmi_dev_power_ave_get(dv_ind, sensor_count, ave)
-                .try_err()?;
-            raw.rsmi_dev_power_cap_get(dv_ind, sensor_count, cap)
-                .try_err()?;
-            raw.rsmi_dev_power_cap_range_get(dv_ind, sensor_count, max, min)
-                .try_err()?;
+            rsmi_dev_power_ave_get(dv_ind, sensor_count, ave).into_rocm_err()?;
+            rsmi_dev_power_cap_get(dv_ind, sensor_count, cap).into_rocm_err()?;
+            rsmi_dev_power_cap_range_get(dv_ind, sensor_count, max, min).into_rocm_err()?;
         }
         sensor_count += 1;
         let mut counter = sensor_count as usize + 1;
@@ -65,28 +66,28 @@ impl RocmSmi {
                 max = realloc(max.cast(), counter * size_of::<u64>()).cast();
                 min = realloc(min.cast(), counter * size_of::<u64>()).cast();
 
-                let ret_ave = raw.rsmi_dev_power_ave_get(
+                let ret_ave = rsmi_dev_power_ave_get(
                     dv_ind,
                     sensor_count,
                     ave.add(sensor_count as usize * size_of::<u64>()),
                 );
 
-                let ret_cap = raw.rsmi_dev_power_cap_get(
+                let ret_cap = rsmi_dev_power_cap_get(
                     dv_ind,
                     sensor_count,
                     cap.add(sensor_count as usize * size_of::<u64>()),
                 );
 
-                let ret_rng = raw.rsmi_dev_power_cap_range_get(
+                let ret_rng = rsmi_dev_power_cap_range_get(
                     dv_ind,
                     sensor_count,
                     max.add(sensor_count as usize * size_of::<u64>()),
                     min.add(sensor_count as usize * size_of::<u64>()),
                 );
 
-                if ret_ave != RocmErr::RsmiStatusSuccess
-                    || ret_cap != RocmErr::RsmiStatusSuccess
-                    || ret_rng != RocmErr::RsmiStatusSuccess
+                if ret_ave != RocmErr::RsmiStatusSuccess.into()
+                    || ret_cap != RocmErr::RsmiStatusSuccess.into()
+                    || ret_rng != RocmErr::RsmiStatusSuccess.into()
                 {
                     break;
                 }
@@ -99,10 +100,11 @@ impl RocmSmi {
         let mut default_power_cap = 0u64;
         let power_profile_preset: *mut RsmiPowerProfileStatus = std::ptr::null_mut();
         unsafe {
-            raw.rsmi_dev_current_socket_power_get(dv_ind, &mut current_power as *mut u64).try_err()? ;
-            raw.rsmi_dev_power_cap_default_get(dv_ind, &mut default_power_cap as *mut u64)
-                .try_err()?;
-            raw.rsmi_dev_power_profile_presets_get(dv_ind, 0, power_profile_preset).try_err()?
+            rsmi_dev_current_socket_power_get(dv_ind, &mut current_power as *mut u64)
+                .into_rocm_err()?;
+            rsmi_dev_power_cap_default_get(dv_ind, &mut default_power_cap as *mut u64)
+                .into_rocm_err()?;
+            rsmi_dev_power_profile_presets_get(dv_ind, 0, power_profile_preset).into_rocm_err()?
         };
 
         Ok(Power {

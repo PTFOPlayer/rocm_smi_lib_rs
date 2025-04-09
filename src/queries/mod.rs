@@ -7,3 +7,4 @@ pub mod power;
 pub mod error;
 pub mod version;
 pub mod topo;
+pub mod common_structures;

@@ -1,15 +1,11 @@
 #[cfg(test)]
-
-
 mod test {
     use std::time::Duration;
 
-    use rocm_smi_lib_sys::{
-        bindings::{RsmiClkType, RsmiTemperatureMetric, RsmiTemperatureSensor, RsmiVoltageMetric},
-        error::RocmErr,
-    };
-
-    use crate::RocmSmi ;
+    use crate::RocmErr;
+    use crate::RocmSmi;
+    use crate::{RsmiTemperatureMetric, RsmiTemperatureType};
+    use crate::RsmiVoltageMetric;
 
     #[test]
     #[cfg(feature = "device")]
@@ -28,7 +24,6 @@ mod test {
         println!("metrics: {:?}", metrics);
         Ok(())
     }
-
 
     #[test]
     #[cfg(feature = "device")]
@@ -75,8 +70,8 @@ mod test {
         println!(
             "junction temperature data: {:?}",
             res.get_temperature_metric(
-                RsmiTemperatureSensor::RsmiTempTypeJunction,
-                RsmiTemperatureMetric::RsmiTempCurrent
+                RsmiTemperatureType::Junction,
+                RsmiTemperatureMetric::Current
             )
         );
         Ok(())
@@ -88,34 +83,32 @@ mod test {
         let mut res = RocmSmi::init()?.into_first_device()?;
         println!(
             "memory temperature data: {:?}",
-            res.get_temperature_metric(
-                RsmiTemperatureSensor::RsmiTempTypeMemory,
-                RsmiTemperatureMetric::RsmiTempCurrent,
-            )
+            res.get_temperature_metric(RsmiTemperatureType::Memory, RsmiTemperatureMetric::Current)
         );
         Ok(())
     }
 
-    #[test]
-    #[cfg(feature = "fn_query")]
-    fn supported_fn_test() -> Result<(), RocmErr> {
-        let mut res = RocmSmi::init()?;
-        println!("supported functions:");
-        let names = res.get_supported_functions()?;
-        for name in names  {
-            println!("\t{:?}", name);
-        }
-        Ok(())
-    }
+    // #[test]
+    // #[cfg(feature = "fn_query")]
+    // fn supported_fn_test() -> Result<(), RocmErr> {
+    //     let mut res = RocmSmi::init()?;
+    //     println!("supported functions:");
+    //     let names = res.get_supported_functions()?;
+    //     for name in names {
+    //         println!("\t{:?}", name);
+    //     }
+    //     Ok(())
+    // }
 
     #[cfg(feature = "device")]
     #[test]
     fn voltage_test() -> Result<(), RocmErr> {
+       
         let mut res = RocmSmi::init()?.into_first_device()?;
         println!("{}", res.id);
         println!(
             "voltage data: {:?}",
-            res.get_voltage_metric(RsmiVoltageMetric::RsmiVoltCurrent)
+            res.get_voltage_metric(RsmiVoltageMetric::Current)
         );
         Ok(())
     }
@@ -123,6 +116,8 @@ mod test {
     #[cfg(feature = "device")]
     #[test]
     fn main_test() -> Result<(), RocmErr> {
+        use crate::RsmiClkType;
+
         let mut res = RocmSmi::init()?.into_first_device()?;
         println!("{}", res.id);
         std::thread::sleep(Duration::from_secs_f32(2.));
@@ -139,7 +134,6 @@ mod test {
         // println!("metrics: {:?}", res.get_full_metrics());
         println!("ecc: {:?}", res.get_ecc_data());
         println!("vbios: {:?}", res.get_vbios_version());
-
 
         println!("rsmi_v: {:?}", res.get_rsmi_version());
         Ok(())

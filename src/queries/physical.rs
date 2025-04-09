@@ -2,9 +2,9 @@ use std::{mem::size_of, slice::from_raw_parts};
 
 use libc::{malloc, realloc};
 
-use rocm_smi_lib_sys::{
-    error::RocmErr, RawRsmi,
-};
+use rocm_smi_lib_sys::bindings::*;
+
+use crate::error::RocmErr;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Fans<'a> {
@@ -16,15 +16,15 @@ pub struct Fans<'a> {
 
 impl Fans<'_> {
     #[inline(always)]
-    pub(crate) unsafe fn get_fans(raw: &mut RawRsmi, dv_ind: u32) -> Result<Self, RocmErr> {
+    pub(crate) unsafe fn get_fans(dv_ind: u32) -> Result<Self, RocmErr> {
         let mut sensor_count = 0;
         let mut rpm = malloc(size_of::<i64>()).cast();
         let mut speed = malloc(size_of::<i64>()).cast();
         let mut speed_max = malloc(size_of::<i64>()).cast();
 
-        raw.rsmi_dev_fan_rpms_get(dv_ind, sensor_count, rpm);
-        raw.rsmi_dev_fan_speed_get(dv_ind, sensor_count, speed);
-        raw.rsmi_dev_fan_speed_max_get(dv_ind, sensor_count, speed_max);
+        rsmi_dev_fan_rpms_get(dv_ind, sensor_count, rpm);
+        rsmi_dev_fan_speed_get(dv_ind, sensor_count, speed);
+        rsmi_dev_fan_speed_max_get(dv_ind, sensor_count, speed_max);
 
         sensor_count += 1;
         let mut counter = sensor_count as usize + 1;
@@ -33,27 +33,27 @@ impl Fans<'_> {
             speed = realloc(speed.cast(), counter * size_of::<i64>()).cast();
             speed_max = realloc(speed_max.cast(), counter * size_of::<i64>()).cast();
 
-            let ret_rpm = raw.rsmi_dev_fan_rpms_get(
+            let ret_rpm = rsmi_dev_fan_rpms_get(
                 dv_ind,
                 sensor_count,
                 rpm.add(sensor_count as usize * size_of::<i64>()),
             );
 
-            let ret_speed = raw.rsmi_dev_fan_speed_get(
+            let ret_speed = rsmi_dev_fan_speed_get(
                 dv_ind,
                 sensor_count,
                 speed.add(sensor_count as usize * size_of::<i64>()),
             );
 
-            let ret_speed_max = raw.rsmi_dev_fan_speed_max_get(
+            let ret_speed_max = rsmi_dev_fan_speed_max_get(
                 dv_ind,
                 sensor_count,
                 speed_max.add(sensor_count as usize * size_of::<i64>()),
             );
 
-            if ret_rpm != RocmErr::RsmiStatusSuccess
-                || ret_speed != RocmErr::RsmiStatusSuccess
-                || ret_speed_max != RocmErr::RsmiStatusSuccess
+            if ret_rpm != RocmErr::RsmiStatusSuccess.into()
+                || ret_speed != RocmErr::RsmiStatusSuccess.into()
+                || ret_speed_max != RocmErr::RsmiStatusSuccess.into()
             {
                 break;
             }

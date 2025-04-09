@@ -1,6 +1,6 @@
 [package]
 name = "rocm_smi_lib"
-version = "0.2.5"
+version = "0.3.0-rc.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["WhiskyAKM"]
@@ -15,9 +15,8 @@ exclude = [
 ]
 
 [dependencies]
-lazy_static = "1.5.0"
-libc = "0.2.158"
-rocm_smi_lib_sys = "0.2.5"
+libc = "0.2.171"
+rocm_smi_lib_sys = "0.3.0"
 
 [profile.dev]
 opt-level = 1
@@ -26,5 +25,7 @@ opt-level = 1
 opt-level = 3
 
 [features]
+default = ["device"]
 fn_query = []
 device = []
+process = []

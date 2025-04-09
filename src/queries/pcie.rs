@@ -1,6 +1,9 @@
-use rocm_smi_lib_sys::{bindings::*, error::RocmErr, RawRsmi};
+use rocm_smi_lib_sys::bindings::*;
 
-use crate::RocmSmi;
+use crate::{
+    error::{IntoRocmErr, RocmErr},
+    RocmSmi,
+};
 #[derive(Debug)]
 pub struct Pcie {
     pub id: u64,
@@ -52,9 +55,7 @@ impl RocmSmi {
     ///
     /// This function will return an error if `dv_ind` id not valid device identifier.
     pub fn get_device_pcie_data<'a>(&mut self, dv_ind: u32) -> Result<Pcie, RocmErr> {
-        let raw: &mut RawRsmi = &mut self.raw;
-
-        let bandwidth = &mut RsmiPcieBandwidth::default();
+        let mut bandwidth: rsmi_pcie_bandwidth = unsafe { std::mem::zeroed() };
 
         let mut id = 0u64;
 
@@ -65,18 +66,17 @@ impl RocmSmi {
         let mut max_pkg_size = 0u64;
 
         unsafe {
-            raw.rsmi_dev_pci_bandwidth_get(dv_ind, bandwidth as *mut RsmiPcieBandwidth)
-                .try_err()?;
-            raw.rsmi_dev_pci_id_get(dv_ind, &mut id as *mut u64)
-                .try_err()?;
-            raw.rsmi_topo_numa_affinity_get(dv_ind, &mut numa as *mut i32);
-            raw.rsmi_dev_pci_throughput_get(
+            rsmi_dev_pci_bandwidth_get(dv_ind, &mut bandwidth as *mut rsmi_pcie_bandwidth)
+                .into_rocm_err()?;
+            rsmi_dev_pci_id_get(dv_ind, &mut id as *mut u64).into_rocm_err()?;
+            rsmi_topo_numa_affinity_get(dv_ind, &mut numa as *mut i32);
+            rsmi_dev_pci_throughput_get(
                 dv_ind,
                 &mut pkg_sent as *mut u64,
                 &mut pkg_recived as *mut u64,
                 &mut max_pkg_size as *mut u64,
             )
-            .try_err()?;
+            .into_rocm_err()?;
         }
 
         let len = bandwidth.transfer_rate.num_supported as usize;
