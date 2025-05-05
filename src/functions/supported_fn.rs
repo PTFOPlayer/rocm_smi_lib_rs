@@ -1,35 +1,133 @@
-// currently not available
+use rocm_smi_lib_sys::bindings::{
+    rsmi_dev_supported_func_iterator_close, rsmi_dev_supported_func_iterator_open,
+    rsmi_dev_supported_variant_iterator_open, rsmi_func_id_iter_handle_t, rsmi_func_id_value_t,
+    rsmi_func_iter_next, rsmi_func_iter_value_get, rsmi_status_t_RSMI_STATUS_NO_DATA,
+};
+use std::ffi::CStr;
+use std::ptr;
 
-// use std::mem::size_of;
+use crate::{IntoRocmErr, RocmErr, RocmSmi};
 
-// use rocm_smi_lib_sys::bindings::*;
+#[derive(Debug)]
+pub struct Variant {
+    pub id: u32,
+    pub sub_variants: Vec<u32>,
+}
 
-// use crate::error::RocmErr;
-// pub unsafe fn get_supported_fn() -> Result<Vec<String>, RocmErr> {
-//     let mut handle = RsmiFuncIdIterHandle::new();
-//     let hdl_ptr = &mut handle as *mut RsmiFuncIdIterHandle;
-//     raw.rsmi_dev_supported_func_iterator_open(0, hdl_ptr)
-//         .try_err()?;
+#[derive(Debug)]
+pub struct FunctionInfo {
+    pub name: String,
+    pub variants: Vec<Variant>,
+}
+impl RocmSmi {
+    pub fn get_supported_fn(&self, dev_id: u32) -> Result<Vec<FunctionInfo>, RocmErr> {
+        let mut result = Vec::new();
 
-//     let mut value = RsmiFuncIdValue::default();
-//     let val_ptr = &mut value as *mut RsmiFuncIdValue;
+        let mut iter_handle: rsmi_func_id_iter_handle_t = ptr::null_mut();
+        unsafe { rsmi_dev_supported_func_iterator_open(dev_id, &mut iter_handle) }
+            .into_rocm_err()?;
 
-//     let mut names = vec![];
+        loop {
+            let mut value: rsmi_func_id_value_t = unsafe { std::mem::zeroed() };
+            let err = unsafe { rsmi_func_iter_value_get(iter_handle, &mut value) };
 
-//     loop {
-//         raw.rsmi_func_iter_value_get(handle, val_ptr).try_err()?;
-//         let buff = libc::malloc(128 * size_of::<i8>()).cast::<i8>();
-//         value.name.cast::<i8>().copy_to_nonoverlapping(buff, 128);
-//         let temp = std::ffi::CString::from_raw(buff);
-//         let mut fn_name = temp.to_string_lossy().to_string();
-//         fn_name.shrink_to_fit();
-//         names.push(fn_name);
+            if err == rsmi_status_t_RSMI_STATUS_NO_DATA {
+                break;
+            }
+            err.into_rocm_err()?;
 
-//         let res = raw.rsmi_func_iter_next(handle);
-//         if res == RocmErr::RsmiStatusNoData {
-//             break;
-//         }
-//     }
+            let name = unsafe { CStr::from_ptr(value.name).to_string_lossy().to_string() };
+            let mut variants = Vec::new();
 
-//     Ok(names)
-// }
+            let mut var_iter: rsmi_func_id_iter_handle_t = ptr::null_mut();
+            let err =
+                unsafe { rsmi_dev_supported_variant_iterator_open(iter_handle, &mut var_iter) };
+
+            if err != rsmi_status_t_RSMI_STATUS_NO_DATA {
+                err.into_rocm_err()?;
+
+                loop {
+                    let mut var_val: rsmi_func_id_value_t = unsafe { std::mem::zeroed() };
+                    let err = unsafe { rsmi_func_iter_value_get(var_iter, &mut var_val) };
+                    if err == rsmi_status_t_RSMI_STATUS_NO_DATA {
+                        break;
+                    }
+                    err.into_rocm_err()?;
+
+                    let mut sub_var_ids = Vec::new();
+                    let mut sub_var_iter: rsmi_func_id_iter_handle_t = ptr::null_mut();
+
+                    let err = unsafe {
+                        rsmi_dev_supported_variant_iterator_open(var_iter, &mut sub_var_iter)
+                    };
+                    if err != rsmi_status_t_RSMI_STATUS_NO_DATA {
+                        err.into_rocm_err()?;
+
+                        loop {
+                            let mut sub_val: rsmi_func_id_value_t = unsafe { std::mem::zeroed() };
+                            let err =
+                                unsafe { rsmi_func_iter_value_get(sub_var_iter, &mut sub_val) };
+                            if err == rsmi_status_t_RSMI_STATUS_NO_DATA {
+                                break;
+                            }
+                            err.into_rocm_err()?;
+
+                            sub_var_ids.push(unsafe { sub_val.id } as u32);
+
+                            let err = unsafe { rsmi_func_iter_next(sub_var_iter) };
+                            if err == rsmi_status_t_RSMI_STATUS_NO_DATA {
+                                break;
+                            }
+                            err.into_rocm_err()?;
+                        }
+
+                        unsafe {
+                            rsmi_dev_supported_func_iterator_close(&mut sub_var_iter);
+                        }
+                    }
+
+                    variants.push(Variant {
+                        id: unsafe { var_val.id as u32 },
+                        sub_variants: sub_var_ids,
+                    });
+
+                    let err = unsafe { rsmi_func_iter_next(var_iter) };
+                    if err == rsmi_status_t_RSMI_STATUS_NO_DATA {
+                        break;
+                    }
+                    err.into_rocm_err()?;
+                }
+
+                unsafe {
+                    rsmi_dev_supported_func_iterator_close(&mut var_iter);
+                }
+            }
+
+            result.push(FunctionInfo { name, variants });
+
+            let err = unsafe { rsmi_func_iter_next(iter_handle) };
+            if err == rsmi_status_t_RSMI_STATUS_NO_DATA {
+                break;
+            }
+            err.into_rocm_err()?;
+        }
+
+        unsafe {
+            rsmi_dev_supported_func_iterator_close(&mut iter_handle);
+        }
+
+        Ok(result)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{RocmErr, RocmSmi};
+
+    #[test]
+    fn get_supported_fn_test() -> Result<(), RocmErr> {
+        println!("{:#?}", RocmSmi::init()?.get_supported_fn(0)?);
+
+        Ok(())
+    }
+}
