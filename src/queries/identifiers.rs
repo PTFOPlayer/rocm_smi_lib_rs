@@ -33,7 +33,7 @@ impl RocmSmi {
     /// fn print_gpu_name() -> Result<(), RocmErr> {
     ///     let rocm = RocmSmi::init()?;
     ///     let name = rocm.get_device_identifiers(0)?.name;
-    ///     println!("{}", name);
+    ///     println!("{:?}", name);
     ///     Ok(())
     /// }
     /// ```

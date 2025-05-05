@@ -1,5 +1,5 @@
 
-use rocm_smi_lib_sys::bindings::{rsmi_dev_ecc_count_get, rsmi_dev_ecc_status_get, rsmi_error_count_t, rsmi_gpu_block, rsmi_ras_err_state_t};
+use rocm_smi_lib_sys::bindings::{rsmi_dev_ecc_count_get, rsmi_dev_ecc_status_get, rsmi_error_count_t};
 
 use crate::error::IntoRocmErr;
 
