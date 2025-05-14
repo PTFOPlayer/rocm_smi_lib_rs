@@ -20,7 +20,7 @@ pub struct Identifiers {
     pub xgmi_physical_id: Result<u16, RocmErr>,
 }
 
-const NAME_SIZE: usize = 64;
+const NAME_SIZE: usize = 256;
 
 impl RocmSmi {
     /// # Functionality
