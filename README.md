@@ -1,5 +1,11 @@
 # rocm_smi_lib_rs
+
 Crate bringing support for rocm-smi liblary from C
+
+## Disclaimer
+
+This project is **not affiliated with, endorsed by, or sponsored by Advanced Micro Devices, Inc. (AMD)**.  
+ROCm and AMD are trademarks of Advanced Micro Devices, Inc.
 
 # Compatibility 
 | Crate version | Rocm version  |
